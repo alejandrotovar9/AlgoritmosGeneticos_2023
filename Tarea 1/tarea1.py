@@ -206,10 +206,12 @@ r_mut = 0.1
 
 # Ejecutar el algoritmo genetico
 
-print("El mejor resultado obtenido es el siguiente: ")
+
 best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
                            n_pob, r_cross, r_mut, tipo_optim, func)
 
 print('Listo!')
+
+print("El mejor resultado obtenido es el siguiente: ")
 decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
 print('f(%s) = %f' % (decoded, puntuacion))
