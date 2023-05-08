@@ -1,1 +1,1 @@
-from funciones import *
+from . import funciones
