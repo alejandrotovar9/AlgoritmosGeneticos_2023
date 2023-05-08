@@ -22,6 +22,7 @@ import numpy as np
 
 # AJUSTAR INVERSA PARA CUANDO ESTE MINIMIZNDO
 
+
 def F1(x):
     return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4
 
@@ -109,13 +110,15 @@ def mutacion(bitstring, r_mut):
 
 # --------------------------Algoritmo Genetico----------------------------------
 
+
 mejores = []
 generaciones = []
 mejor_individuo_x = []
 mejor_individuo_y = []
+indices = []
 
 
-def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func):
+def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
     pob = [randint(0, 2, size=n_bits).tolist() for _ in range(n_pob)]
 
@@ -145,23 +148,30 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         # Se asigna una puntuacion a cada candidato
 
         # Se busca una solucion mejor entre la poblacion
-        if tipo_optim == 1:
-            for i in range(n_pob):
-                if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
-                    best, best_eval = pob[i], fitness[i]
-                    mejor_ind = decoded[i]
-                    print(">%d, nuevo mejor f(%s) = %f" %
-                          (gen, decoded[i], fitness[i]))
+
+        # Elitismo
+
+        if elit == 1:
+            if tipo_optim == 1:
+                for i in range(n_pob):
+                    if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
+                        best, best_eval = pob[i], fitness[i]
+                        print(">%d, nuevo mejor f(%s) = %f" %
+                              (gen, decoded[i], fitness[i]))
+            else:
+                for i in range(n_pob):
+                    if fitness[i] < best_eval:  # Esta linea define si busco el maximo o el minimo
+                        best, best_eval = pob[i], fitness[i]
+                        print(">%d, nuevo mejor f(%s) = %f" %
+                              (gen, decoded[i], fitness[i]))
         else:
-            for i in range(n_pob):
-                if fitness[i] < best_eval:  # Esta linea define si busco el maximo o el minimo
-                    best, best_eval = pob[i], fitness[i]
-                    mejor_ind = decoded[i]
-                    print(">%d, nuevo mejor f(%s) = %f" %
-                          (gen, decoded[i], fitness[i]))
-
-
-
+            # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
+            best_index, best_eval = np.argmax(decoded), np.amax(fitness)
+            print("Mejor indice:", best_index)
+            print("Mejor fitness: ", best_eval)
+            #print(">%d, nuevo mejor f(%s) = %f" %
+                              #(gen, decoded[best_index], best_eval))
+            
         # Se hace la seleccion de los padres
         padres_selec = [selection(pob, fitness, tipo_optim)
                         for _ in range(n_pob)]
@@ -182,9 +192,10 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         # Se actualiza la poblacion
         pob = hijos
         generaciones.append(gen)
+        indices.append(best_index)
         mejores.append(best_eval)
-        mejor_individuo_x.append(mejor_ind[0])
-        mejor_individuo_y.append(mejor_ind[1])
+        #mejor_individuo_x.append(best[0])
+        #mejor_individuo_y.append(best[1])
     return [best, best_eval]
 
 
@@ -215,29 +226,31 @@ r_cross = 0.8
 # Tasa de mutacion segun Holland
 r_mut = 0.1
 
+#Elitismo (1) o sin elitismo (0)
+elit = 0
+
 
 # Ejecutar el algoritmo genetico
 
 
 best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
-                           n_pob, r_cross, r_mut, tipo_optim, func)
+                           n_pob, r_cross, r_mut, tipo_optim, func, elit)
 
 print('Listo!')
 
 print("El mejor resultado obtenido es el siguiente: ")
 decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
 print('f(%s) = %f' % (decoded, puntuacion))
-
-print(mejor_individuo_x)
+print("El mejor individuo esta ubicado en: ", )
 
 plt.plot(generaciones, mejores)
 plt.xlabel('Generaciones')
 plt.ylabel('Fitness del mejor individuo')
 plt.title('Evolución del Algoritmo Genético')
 
-#plt.plot()
+# plt.plot()
 
-#plt.show()
+# plt.show()
 
 # Define the range of x values
 x_min, x_max = -8, 8
