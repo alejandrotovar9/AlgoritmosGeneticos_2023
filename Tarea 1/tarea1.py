@@ -15,12 +15,12 @@
 # Importando librerias necesarias
 from numpy.random import randint
 from numpy.random import rand
+import matplotlib.pyplot as plt
 import numpy as np
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 
 # AJUSTAR INVERSA PARA CUANDO ESTE MINIMIZNDO
-
 
 def F1(x):
     return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4
@@ -109,6 +109,11 @@ def mutacion(bitstring, r_mut):
 
 # --------------------------Algoritmo Genetico----------------------------------
 
+mejores = []
+generaciones = []
+mejor_individuo_x = []
+mejor_individuo_y = []
+
 
 def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
@@ -144,14 +149,18 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
             for i in range(n_pob):
                 if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
                     best, best_eval = pob[i], fitness[i]
+                    mejor_ind = decoded[i]
                     print(">%d, nuevo mejor f(%s) = %f" %
                           (gen, decoded[i], fitness[i]))
         else:
             for i in range(n_pob):
                 if fitness[i] < best_eval:  # Esta linea define si busco el maximo o el minimo
                     best, best_eval = pob[i], fitness[i]
+                    mejor_ind = decoded[i]
                     print(">%d, nuevo mejor f(%s) = %f" %
                           (gen, decoded[i], fitness[i]))
+
+
 
         # Se hace la seleccion de los padres
         padres_selec = [selection(pob, fitness, tipo_optim)
@@ -172,7 +181,10 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se actualiza la poblacion
         pob = hijos
-        # print("Esta es la generacion: ", gen)
+        generaciones.append(gen)
+        mejores.append(best_eval)
+        mejor_individuo_x.append(mejor_ind[0])
+        mejor_individuo_y.append(mejor_ind[1])
     return [best, best_eval]
 
 
@@ -192,7 +204,7 @@ n_bits = n_bits_1 + n_bits_2
 n_pob = 50
 
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 0
+tipo_optim = 1
 
 # Variable que controla si se quiere optimizar la F1 (1) o F2 (0)
 func = 1
@@ -215,3 +227,45 @@ print('Listo!')
 print("El mejor resultado obtenido es el siguiente: ")
 decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
 print('f(%s) = %f' % (decoded, puntuacion))
+
+print(mejor_individuo_x)
+
+plt.plot(generaciones, mejores)
+plt.xlabel('Generaciones')
+plt.ylabel('Fitness del mejor individuo')
+plt.title('Evolución del Algoritmo Genético')
+
+#plt.plot()
+
+#plt.show()
+
+# Define the range of x values
+x_min, x_max = -8, 8
+y_min, y_max = -8, 8
+n_points = 100
+x_values = np.linspace(x_min, x_max, n_points)
+y_values = np.linspace(y_min, y_max, n_points)
+
+# Create a meshgrid of x and y values
+X, Y = np.meshgrid(x_values, y_values)
+
+# Evaluate the function at each point in the meshgrid
+Z = F1([X, Y])
+
+# Create a 2D contour plot of the function
+fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+ax[0].contourf(X, Y, Z, levels=30, cmap='cool')
+ax[0].set_xlabel('x1')
+ax[0].set_ylabel('x2')
+ax[0].set_title('Contour plot of F1(x)')
+
+# Create a 3D surface plot of the function
+ax[1] = fig.add_subplot(122, projection='3d')
+ax[1].plot_surface(X, Y, Z, cmap='cool')
+ax[1].set_xlabel('x1')
+ax[1].set_ylabel('x2')
+ax[1].set_zlabel('F1(x)')
+ax[1].set_title('3D surface plot of F1(x)')
+
+# Show the plot
+plt.show()
