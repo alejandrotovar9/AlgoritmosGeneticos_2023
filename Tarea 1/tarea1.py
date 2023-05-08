@@ -239,9 +239,9 @@ best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
 print('Listo!')
 
 print("El mejor resultado obtenido es el siguiente: ")
-decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
-print('f(%s) = %f' % (decoded, puntuacion))
-print("El mejor individuo esta ubicado en: ", )
+#decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
+#print('f(%s) = %f' % (decoded, puntuacion))
+#print("El mejor individuo esta ubicado en: ", )
 
 plt.plot(generaciones, mejores)
 plt.xlabel('Generaciones')
