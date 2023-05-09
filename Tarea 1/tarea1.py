@@ -63,6 +63,7 @@ mejor_individuo_x = []
 mejor_individuo_y = []
 indices = []
 mejor_par = []
+prom = []
 
 def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
@@ -115,6 +116,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
             best_index, best_eval = np.argmax(fitness), np.amax(fitness)
             best_pair = decoded[best_index]
+            promedio = np.mean(fitness)
 
             print("Mejor indice:", best_index)
             print("Mejor fitness: ", best_eval)
@@ -137,15 +139,16 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
                 # Se guarda para la siguiente generacion
                 hijos.append(c)
 
-        # Se actualiza la poblacion
-        pob = hijos
         generaciones.append(gen)
         indices.append(best_index)
         mejores.append(best_eval)
         mejor_par.append(best_pair)
+        prom.append(promedio)
         best = best_pair
-        # mejor_individuo_x.append(best[0])
-        # mejor_individuo_y.append(best[1])
+
+        # Se actualiza la poblacion
+        pob = hijos
+        
     return [best, best_eval]
 
 
@@ -214,11 +217,22 @@ for i in range(100):
 # Create a scatter plot of the x-y value pairs with the W values as color
 plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
 
+#identificando los puntos
+# Add text labels to the plot
+for i in range(100):
+    plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
+
 # Add colorbar and labels to the plot
 plt.colorbar()
 plt.xlabel('x')
 plt.ylabel('y')
-plt.title('Scatter plot with color based on F function')
+plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
+
+fig3 = plt.figure()
+plt.plot(generaciones, prom)
+plt.xlabel('Generaciones')
+plt.ylabel('Fitness promedio de los individuos')
+plt.title('Evolución del Algoritmo Genético')
 
 # Show the plots
 plt.show()
