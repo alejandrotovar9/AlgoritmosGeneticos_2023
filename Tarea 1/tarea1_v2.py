@@ -40,14 +40,54 @@ r_cross = 0.8
 r_mut = 0.15
 # Elitismo (1) o sin elitismo (0)
 elit = 0
+#Numero de corridas
+corridas = 5
 
 def F1(x):
     return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4
-
 
 def F2(x):
     return (x[0]*x[0]+x[1]*x[1])**0.25*(1+np.sin(50*(x[0]*x[0]+x[1]*x[1])**0.1)**2) + (x[0]*x[0]+x[2]*x[2])**0.25*(1+np.sin(50*(x[0]*x[0]+x[2]*x[2])**0.1)**2) + (x[2]*x[2]+x[1]*x[1])**0.25*(1+np.sin(50*(x[2]*x[2]+x[1]*x[1])**0.1)**2)
 
 #Generando poblacion aleatoria
+#Dominio
+dom_n = 8
+dom_p = -8
 
-a1 = np.random.rand(50)
+
+def create_population(n_pob):
+    # Create an initial population of size 'size'
+    a1 = np.random.rand(n_pob)
+    #Escalando entre el dominio dado> -8 es el 0 y 8 es el 1
+    pop = dom_n + (dom_p - dom_n)*a1 #Poblacion aleatoria de numeros entre -8 y 8 
+    return pop
+
+# Evaluate fitness
+def evaluate_population(population, tipo_optim):
+    #Evaluo el fitness y lo guardo en un arreglo
+    
+    #Chequeo si quiero optimizar para que sea el inverso
+    if tipo_optim == 1:
+        fitness_values = []
+        for sol in (population):
+            par = []
+            par.append(population(sol))
+            par.append(population(sol+1))
+            fitness_values.append(F1(par))
+    #Caso en el que estoy minimizando
+    else:
+        fitness_values = []
+        for solution in (population/2):
+            #par = [population[solution],population[solution + 1]]
+            fitness_values.append(1/F1(solution))
+    return fitness_values
+
+
+
+pop = create_population(50)
+print(pop)
+fitness = evaluate_population(pop,tipo_optim)
+print(fitness)
+#def alg_gen(f1, f2, func, tipo_optim, n_pob, n_iter, corridas):
+    #Teniendo poblacion inicial puedo 
+ #   return mejor_par

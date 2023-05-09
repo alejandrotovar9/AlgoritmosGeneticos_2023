@@ -192,6 +192,7 @@ plt.xlabel('x')
 plt.ylabel('y')
 plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
 
+#Graficando curva promedio 
 fig3 = plt.figure()
 plt.plot(generaciones, prom)
 plt.xlabel('Generaciones')
