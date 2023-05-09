@@ -16,7 +16,6 @@
 
 from Funciones.funciones import *  # Importando archivo que contiene las funciones
 
-
 from numpy.random import randint
 from numpy.random import rand
 import matplotlib.pyplot as plt
@@ -94,11 +93,9 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
             fitness = [f2(d) for d in decoded]
 
         # Se asigna una puntuacion a cada candidato
-
         # Se busca una solucion mejor entre la poblacion
 
         # Elitismo
-
         if elit == 1:
             if tipo_optim == 1:
                 for i in range(n_pob):
@@ -112,6 +109,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
                         best, best_eval = pob[i], fitness[i]
                         print(">%d, nuevo mejor f(%s) = %f" %
                               (gen, decoded[i], fitness[i]))
+        #Sin elitismo, busco el mejor en cada generacion y actualizo
         else:
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
             best_index, best_eval = np.argmax(fitness), np.amax(fitness)
@@ -158,42 +156,8 @@ best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
 print('Listo!')
 
 print("El mejor resultado obtenido es el siguiente: ", best)
-# decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
-#print('f(%s) = %f' % (decoded, puntuacion))
-# print("El mejor individuo esta ubicado en: ", )
 
 #Los mejores individuos estan ubicados en las posiciones asignadas por best_index en el arreglo de la poblacion
-
-# Define the range of x values
-#x_min, x_max = -8, 8
-#y_min, y_max = -8, 8
-#n_points = 100
-#x_values = np.linspace(x_min, x_max, n_points)
-#y_values = np.linspace(y_min, y_max, n_points)
-
-# Create a meshgrid of x and y values
-#X, Y = np.meshgrid(x_values, y_values)
-
-# Evaluate the function at each point in the meshgrid
-#Z = F1([X, Y])
-
-# Create a 2D contour plot of the function
-#fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-#ax[0].contourf(X, Y, Z, levels=30, cmap='cool')
-#ax[0].set_xlabel('x1')
-#ax[0].set_ylabel('x2')
-#ax[0].set_title('Contour plot of F1(x)')
-
-# Create a 3D surface plot of the function
-#ax[1] = fig.add_subplot(122, projection='3d')
-#ax[1].plot_surface(X, Y, Z, cmap='cool')
-#ax[1].set_xlabel('x1')
-#ax[1].set_ylabel('x2')
-#ax[1].set_zlabel('F1(x)')
-#ax[1].set_title('3D surface plot of F1(x)')
-
-# Show the plot
-#plt.show()
 
 #PRIMERA GRAFICA
 fig1 = plt.figure()
