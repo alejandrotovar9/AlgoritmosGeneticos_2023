@@ -40,7 +40,7 @@ func = 1
 # Tasa de crossover segun Holland
 r_cross = 0.8
 # Tasa de mutacion segun Holland
-r_mut = 0.15
+r_mut = 0.1
 # Elitismo (1) o sin elitismo (0)
 elit = 0
 
@@ -57,14 +57,12 @@ def F2(x):
 
 # --------------------------Algoritmo Genetico----------------------------------
 
-
 mejores = []
 generaciones = []
 mejor_individuo_x = []
 mejor_individuo_y = []
 indices = []
 mejor_par = []
-
 
 def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
@@ -84,6 +82,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
+
         # Se decodifica la poblacion, individuo por individuo
         decoded = [decode(dom, n_bits_1, n_bits_2, n_bits, p) for p in pob]
 
@@ -114,11 +113,12 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
                               (gen, decoded[i], fitness[i]))
         else:
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
-            best_index, best_eval = np.argmax(decoded), np.amax(fitness)
+            best_index, best_eval = np.argmax(fitness), np.amax(fitness)
+            best_pair = decoded[best_index]
+
             print("Mejor indice:", best_index)
             print("Mejor fitness: ", best_eval)
-            print("Mejor par x-y: ", pob[best_index])
-            mejor_par.append(pob[best_index])
+            print("Mejor par: ", best_pair)
 
         # Se hace la seleccion de los padres
         padres_selec = [selection(pob, fitness, tipo_optim)
@@ -142,12 +142,11 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         generaciones.append(gen)
         indices.append(best_index)
         mejores.append(best_eval)
-    
+        mejor_par.append(best_pair)
+        best = best_pair
         # mejor_individuo_x.append(best[0])
         # mejor_individuo_y.append(best[1])
     return [best, best_eval]
-
-# Ejecutar el algoritmo genetico
 
 
 best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
@@ -155,45 +154,71 @@ best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
 
 print('Listo!')
 
-print("El mejor resultado obtenido es el siguiente: ")
+print("El mejor resultado obtenido es el siguiente: ", best)
 # decoded = decode(dom, n_bits_1, n_bits_2, n_bits, best)
-# print('f(%s) = %f' % (decoded, puntuacion))
+#print('f(%s) = %f' % (decoded, puntuacion))
 # print("El mejor individuo esta ubicado en: ", )
 
 #Los mejores individuos estan ubicados en las posiciones asignadas por best_index en el arreglo de la poblacion
 
+# Define the range of x values
+#x_min, x_max = -8, 8
+#y_min, y_max = -8, 8
+#n_points = 100
+#x_values = np.linspace(x_min, x_max, n_points)
+#y_values = np.linspace(y_min, y_max, n_points)
+
+# Create a meshgrid of x and y values
+#X, Y = np.meshgrid(x_values, y_values)
+
+# Evaluate the function at each point in the meshgrid
+#Z = F1([X, Y])
+
+# Create a 2D contour plot of the function
+#fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+#ax[0].contourf(X, Y, Z, levels=30, cmap='cool')
+#ax[0].set_xlabel('x1')
+#ax[0].set_ylabel('x2')
+#ax[0].set_title('Contour plot of F1(x)')
+
+# Create a 3D surface plot of the function
+#ax[1] = fig.add_subplot(122, projection='3d')
+#ax[1].plot_surface(X, Y, Z, cmap='cool')
+#ax[1].set_xlabel('x1')
+#ax[1].set_ylabel('x2')
+#ax[1].set_zlabel('F1(x)')
+#ax[1].set_title('3D surface plot of F1(x)')
+
+# Show the plot
+#plt.show()
+
+#PRIMERA GRAFICA
+fig1 = plt.figure()
 plt.plot(generaciones, mejores)
 plt.xlabel('Generaciones')
 plt.ylabel('Fitness del mejor individuo')
 plt.title('Evolución del Algoritmo Genético')
 
-# Define the range of x values
-x_min, x_max = -8, 8
-y_min, y_max = -8, 8
-n_points = 100
-x_values = np.linspace(x_min, x_max, n_points)
-y_values = np.linspace(y_min, y_max, n_points)
 
-# Create a meshgrid of x and y values
-X, Y = np.meshgrid(x_values, y_values)
+#SEGUNDA GRAFICA
+#Sacando datos del arreglo
 
-# Evaluate the function at each point in the meshgrid
-Z = F1([X, Y])
+fig2 = plt.figure()
+mejor_par = np.array(mejor_par)
 
-# Create a 2D contour plot of the function
-fig, ax = plt.subplots(1, 2, figsize=(10, 5))
-ax[0].contourf(X, Y, Z, levels=30, cmap='cool')
-ax[0].set_xlabel('x1')
-ax[0].set_ylabel('x2')
-ax[0].set_title('Contour plot of F1(x)')
+# Evaluate the F function for each pair
+W = np.zeros(100)
+for i in range(100):
+    W[i] = F1(mejor_par[i])
 
-# Create a 3D surface plot of the function
-ax[1] = fig.add_subplot(122, projection='3d')
-ax[1].plot_surface(X, Y, Z, cmap='cool')
-ax[1].set_xlabel('x1')
-ax[1].set_ylabel('x2')
-ax[1].set_zlabel('F1(x)')
-ax[1].set_title('3D surface plot of F1(x)')
+# Create a scatter plot of the x-y value pairs with the W values as color
+plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
 
-# Show the plot
+# Add colorbar and labels to the plot
+plt.colorbar()
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Scatter plot with color based on F function')
+
+# Show the plots
 plt.show()
