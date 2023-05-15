@@ -22,14 +22,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Definir rango para entrada
+#dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
 dom = [[-8.0, 8.0], [-8.0, 8.0]]
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
-n_iter = 100
+n_iter = 50
 # Definir el numero de bits por variable
 n_bits_1 = 10
 n_bits_2 = 10
-n_bits = n_bits_1 + n_bits_2
+n_bits_3 = 10
+
+if len(dom) == 3:
+    n_bits = n_bits_1 + n_bits_2 + n_bits_3
+else:
+    n_bits = n_bits_1 + n_bits_2
 # Tamaño de la poblacion
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
@@ -46,9 +52,8 @@ elit = 0
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 # AJUSTAR INVERSA PARA CUANDO ESTE MINIMIZNDO
 
-
 def F1(x):
-    return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4
+    return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4 + 24
 
 
 def F2(x):
@@ -58,8 +63,6 @@ def F2(x):
 
 mejores = []
 generaciones = []
-mejor_individuo_x = []
-mejor_individuo_y = []
 indices = []
 mejor_par = []
 prom = []
@@ -69,28 +72,33 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
     pob = [randint(0, 2, size=n_bits).tolist() for _ in range(n_pob)]
 
     print("Primer individuo crudo, sin procesar substring:", pob[0])
-    print("Salida del decodificador para el primer individuo: ",
-          decode(dom, n_bits_1, n_bits_2, n_bits, pob[0]))
+    #print("Salida del decodificador para el primer individuo: ",
+          #decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
 
-    # Se guarda la mejor solucion inicial dependiendo de la funcion a estudiar
+    #Se guarda la mejor solucion inicial dependiendo de la funcion a estudiar
     if func == 1:
         best, best_eval = 0, f1(
-            decode(dom, n_bits_1, n_bits_2, n_bits, pob[0]))
+            decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
     else:
         fbest, best_eval = 0, f2(
-            decode(dom, n_bits_1, n_bits_2, n_bits, pob[0]))
+            decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
 
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
 
         # Se decodifica la poblacion, individuo por individuo
-        decoded = [decode(dom, n_bits_1, n_bits_2, n_bits, p) for p in pob]
+        decoded = [decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, p) for p in pob]
 
         # Se verifica cual funcion a utilizar
-        if func == 1:
+        #Funcion 1
+        if func == 1 and tipo_optim == 1:
             fitness = [f1(d) for d in decoded]
-        else:
+        elif func == 1 and tipo_optim == 0:
+            fitness = [1/f1(d) for d in decoded]
+        elif func == 0 and tipo_optim == 1:
             fitness = [f2(d) for d in decoded]
+        elif func == 0 and tipo_optim == 0:
+            fitness = [1/f2(d) for d in decoded]
 
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
@@ -109,6 +117,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
                         best, best_eval = pob[i], fitness[i]
                         print(">%d, nuevo mejor f(%s) = %f" %
                               (gen, decoded[i], fitness[i]))
+                        
         #Sin elitismo, busco el mejor en cada generacion y actualizo
         else:
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
@@ -116,13 +125,13 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
             best_pair = decoded[best_index]
             promedio = np.mean(fitness)
 
-            print("Mejor indice:", best_index)
-            print("Mejor fitness: ", best_eval)
-            print("Mejor par: ", best_pair)
 
-        # Se hace la seleccion de los padres
+        # Se hace la seleccion de los padres recorriendo toda la poblacion
+        #Se genera un arreglo de padres seleccionados
         padres_selec = [selection(pob, fitness, tipo_optim)
                         for _ in range(n_pob)]
+        
+        #padres_selec = ruleta(pob,fitness)
 
         # Se crea la siguiente generacion
         hijos = list()
@@ -144,20 +153,24 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         prom.append(promedio)
         best = best_pair
 
-        # Se actualiza la poblacion
+        # Se actualiza la poblacion actual
         pob = hijos
-        
-    return [best, best_eval]
+
+    #Mejor individuo de todas las generaciones
+    mejor_fitness = np.amax(mejores)
+    print("El mejor fitness es: ", mejor_fitness) 
+    print("El mejor individuo esta ubicado en la posicion: ", np.argmax(mejores))
+    mejor_individuo = mejor_par[np.argmax(mejores)]
+    print("El mejor individuo esta ubicado en: ", mejor_individuo)
+
+    return [mejor_individuo, mejor_fitness]
 
 
 best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
                            n_pob, r_cross, r_mut, tipo_optim, func, elit)
 
 print('Listo!')
-
 print("El mejor resultado obtenido es el siguiente: ", best)
-
-#Los mejores individuos estan ubicados en las posiciones asignadas por best_index en el arreglo de la poblacion
 
 #PRIMERA GRAFICA
 fig1 = plt.figure()
@@ -166,38 +179,41 @@ plt.xlabel('Generaciones')
 plt.ylabel('Fitness del mejor individuo')
 plt.title('Evolución del Algoritmo Genético')
 
+plt.show()
 
 #SEGUNDA GRAFICA
 #Sacando datos del arreglo
 
-fig2 = plt.figure()
-mejor_par = np.array(mejor_par)
+if func==1:
 
-# Evaluate the F function for each pair
-W = np.zeros(100)
-for i in range(100):
-    W[i] = F1(mejor_par[i])
+    fig2 = plt.figure()
+    mejor_par = np.array(mejor_par)
 
-# Create a scatter plot of the x-y value pairs with the W values as color
-plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
+    # Evaluate the F function for each pair
+    W = np.zeros(n_iter)
+    for i in range(n_iter):
+        W[i] = F1(mejor_par[i])
 
-#identificando los puntos
-# Add text labels to the plot
-for i in range(100):
-    plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
+    # Create a scatter plot of the x-y value pairs with the W values as color
+    plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
 
-# Add colorbar and labels to the plot
-plt.colorbar()
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
+    #identificando los puntos
+    # Add text labels to the plot
+    for i in range(n_iter):
+        plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
 
-#Graficando curva promedio 
-fig3 = plt.figure()
-plt.plot(generaciones, prom)
-plt.xlabel('Generaciones')
-plt.ylabel('Fitness promedio de los individuos')
-plt.title('Evolución del Algoritmo Genético')
+    # Add colorbar and labels to the plot
+    plt.colorbar()
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
 
-# Show the plots
-plt.show()
+    #Graficando curva promedio 
+    fig3 = plt.figure()
+    plt.plot(generaciones, prom)
+    plt.xlabel('Generaciones')
+    plt.ylabel('Fitness promedio de los individuos')
+    plt.title('Evolución del Algoritmo Genético')
+
+    # Show the plots
+    plt.show()
