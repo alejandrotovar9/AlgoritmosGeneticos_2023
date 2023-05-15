@@ -128,10 +128,10 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
         #Se genera un arreglo de padres seleccionados
-        padres_selec = [selection(pob, fitness, tipo_optim)
-                        for _ in range(n_pob)]
+        #padres_selec = [selection(pob, fitness, tipo_optim)
+         #               for _ in range(n_pob)]
         
-        #padres_selec = ruleta(pob,fitness)
+        padres_selec = ruleta(pob,fitness)
 
         # Se crea la siguiente generacion
         hijos = list()

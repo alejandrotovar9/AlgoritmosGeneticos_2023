@@ -38,15 +38,9 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         # Se convierte el string a integer
         integer = int(chars, 2)
 
-        print("El entero que se genera: ",integer)
-
         # Se escala el integer a un valor dentro del rango deseado
         #print("Dominio: Minimo %d, Maximo %d " % (dom[i][0], dom[i][1]))
         valor = dom[i][0] + (integer/mayor_valor) * (dom[i][1] - dom[i][0])
-
-        print("Valor obtenido escalado: ", valor)
-
-
 
         # Guardo en la lista inicial
         decodificado.append(valor)
@@ -72,21 +66,28 @@ def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padre
 
     return pob[selection_ix]
 
-#RULETA
+#----------------------------------------------RULETA-------------------------------------------
+
 def ruleta(pop, fitness):
-    total_fitness = np.cumsum(fitness)
+    total_fitness = sum(fitness)
+    print(total_fitness)
     prob = [f/total_fitness for f in fitness] #Divido cada valor de fitness sobre el total
-    cumulative_probabilities = [sum(prob[:i+1]) for i in range(len(prob))]
-    print(cumulative_probabilities)
-    chosen = []
+    acum_prob = []
+
+    #calculo acumulado del vector de probabilidades hasta el punto k en cada iteracion
+    for k in range(len(prob)):
+        arr_aux = prob[:k+1]
+        acum_prob.append(sum(arr_aux))
+
+    elegidos = []
     
     for i in range(len(pop)):
         r = np.random.rand() #genero num aleatorio
-        for j in range(len(cumulative_probabilities)):
-            if r <= cumulative_probabilities[j]:
-                chosen.append(pop[j])
+        for j in range(len(acum_prob)):
+            if r <= acum_prob[j]:
+                elegidos.append(pop[j])
                 break
-    return chosen
+    return elegidos
 
 # Crossover simple entre dos padres_selec para crear 2 hijos
 
