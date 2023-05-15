@@ -4,23 +4,33 @@ from numpy.random import rand
 import matplotlib.pyplot as plt
 import numpy as np
 
-def decode(dom, n_bits_1, n_bits_2, n_bits, bitstring):
+def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
     decodificado = list()  # Se inicializa una lista
     mayor_valor = 2**n_bits
     # Itero para cada variable
     for i in range(len(dom)):
         # Se extrae el substring
 
-        # Se separa el substring en dos cadenas que representan cada variable
-        start, end = i * n_bits_1, (i * n_bits_2)+n_bits_1
-        substring = bitstring[start:end]
+        # Se separa el substring en dos o tres cadenas que representan cada variable
+        if len(dom) == 2:
+            start, end = i * n_bits_1, (i * n_bits_2)+n_bits_1
+            substring = bitstring[start:end]
+        else:
+            if i == 0:
+                start = 0
+                end = n_bits_1
+            elif i == 1:
+                start = n_bits_1
+                end = n_bits_1 + n_bits_2
+            elif i == 2:
+                start = n_bits_1 + n_bits_2
+                end = n_bits_1 + n_bits_2 + n_bits_3
+            substring = bitstring[start:end]
 
-        # Si el substring es mas corto que el numero de bits total, se agregan 0s al final
         while len(substring) < n_bits:
-            # Cambiar a los mas significartivos --------------------
             substring.append(0)
-
-        # print("El substring generado en la iteracion es:", substring) BORRAR------------------
+        
+        #print("El substring es: ", substring)
 
         # Se convierte el substring a un string de chars
         # Esto nos da el valor en binario
@@ -28,8 +38,15 @@ def decode(dom, n_bits_1, n_bits_2, n_bits, bitstring):
         # Se convierte el string a integer
         integer = int(chars, 2)
 
-        # Se escala el integer a un valor dentro del rango deseado scale integer to desired range
+        print("El entero que se genera: ",integer)
+
+        # Se escala el integer a un valor dentro del rango deseado
+        #print("Dominio: Minimo %d, Maximo %d " % (dom[i][0], dom[i][1]))
         valor = dom[i][0] + (integer/mayor_valor) * (dom[i][1] - dom[i][0])
+
+        print("Valor obtenido escalado: ", valor)
+
+
 
         # Guardo en la lista inicial
         decodificado.append(valor)
@@ -37,24 +54,41 @@ def decode(dom, n_bits_1, n_bits_2, n_bits, bitstring):
 
 # Torneo de Seleccion (se lleva a cabo luego de calcular que tan buena es cada funcion)
 
-
 def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padres_selec
     # Primera seleccion aleatoria
-    selection_ix = randint(len(pob))
+    selection_ix = randint(len(pob)) #Indice del individuo seleccionado
+
+    #Un problema del torneo es que selecciono dentro de la misma poblacion, cuando
+    #deberia descartar a los que ya ganaron en el torneo pasado
+
     for ix in randint(0, len(pob), k-1):  # Escojo un indice en particular de la poblacion
         # Chequear si hay alguno mejor (hacer el torneo)
-        # Esto dependera de si se esta maximizando o minimizando
         if tipo_optim == 1:
             if fitness[ix] > fitness[selection_ix]:
                 selection_ix = ix
-        else:
-            if fitness[ix] < fitness[selection_ix]:
-                selection_ix = ix
+        #else:
+         #   if fitness[ix] > fitness[selection_ix]:
+          #      selection_ix = ix
 
     return pob[selection_ix]
 
-# Crossover simple entre dos padres_selec para crear 2 hijos
+#RULETA
+def ruleta(pop, fitness):
+    total_fitness = np.cumsum(fitness)
+    prob = [f/total_fitness for f in fitness] #Divido cada valor de fitness sobre el total
+    cumulative_probabilities = [sum(prob[:i+1]) for i in range(len(prob))]
+    print(cumulative_probabilities)
+    chosen = []
+    
+    for i in range(len(pop)):
+        r = np.random.rand() #genero num aleatorio
+        for j in range(len(cumulative_probabilities)):
+            if r <= cumulative_probabilities[j]:
+                chosen.append(pop[j])
+                break
+    return chosen
 
+# Crossover simple entre dos padres_selec para crear 2 hijos
 
 def crossover(p1, p2, r_cross):
     # Los hijos son copias de los padres_selec por default
@@ -67,9 +101,6 @@ def crossover(p1, p2, r_cross):
         c1 = p1[:pt] + p2[pt:]
         c2 = p2[:pt] + p1[pt:]
     return [c1, c2]
-
-# ---------------------------Operador de mutacion
-
 
 def mutacion(bitstring, r_mut):
     for i in range(len(bitstring)):

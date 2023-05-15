@@ -1,1 +1,3 @@
-print(156&52)
+n = 7
+
+print(bin(n))
