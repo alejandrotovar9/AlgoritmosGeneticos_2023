@@ -21,7 +21,7 @@ from numpy.random import rand
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Definir rango para entrada
+#Definir rango para entrada
 #dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
 dom = [[-8.0, 8.0], [-8.0, 8.0]]
 print("Numero de variables:", len(dom))
@@ -72,8 +72,6 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
     pob = [randint(0, 2, size=n_bits).tolist() for _ in range(n_pob)]
 
     print("Primer individuo crudo, sin procesar substring:", pob[0])
-    #print("Salida del decodificador para el primer individuo: ",
-          #decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
 
     #Se guarda la mejor solucion inicial dependiendo de la funcion a estudiar
     if func == 1:
@@ -128,9 +126,12 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
         #Se genera un arreglo de padres seleccionados
+
+        #Seleccion por Torneo
         #padres_selec = [selection(pob, fitness, tipo_optim)
-         #               for _ in range(n_pob)]
+        #               for _ in range(n_pob)]
         
+        #Seleccion por Ruleta
         padres_selec = ruleta(pob,fitness)
 
         # Se crea la siguiente generacion

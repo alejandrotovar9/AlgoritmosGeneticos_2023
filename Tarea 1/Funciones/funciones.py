@@ -33,20 +33,20 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         #print("El substring es: ", substring)
 
         # Se convierte el substring a un string de chars
+
         # Esto nos da el valor en binario
         chars = ''.join([str(s) for s in substring])
         # Se convierte el string a integer
         integer = int(chars, 2)
 
         # Se escala el integer a un valor dentro del rango deseado
-        #print("Dominio: Minimo %d, Maximo %d " % (dom[i][0], dom[i][1]))
         valor = dom[i][0] + (integer/mayor_valor) * (dom[i][1] - dom[i][0])
 
         # Guardo en la lista inicial
         decodificado.append(valor)
     return decodificado
 
-# Torneo de Seleccion (se lleva a cabo luego de calcular que tan buena es cada funcion)
+#------------------------SELECCION POR TORNEO-------------------------------------------
 
 def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padres_selec
     # Primera seleccion aleatoria
