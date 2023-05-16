@@ -70,7 +70,6 @@ def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padre
 
 def ruleta(pop, fitness):
     total_fitness = sum(fitness)
-    print(total_fitness)
     prob = [f/total_fitness for f in fitness] #Divido cada valor de fitness sobre el total
     acum_prob = []
 

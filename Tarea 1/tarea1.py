@@ -152,7 +152,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         mejores.append(best_eval)
         mejor_par.append(best_pair)
         prom.append(promedio)
-        best = best_pair
+        ultimo_mejor = best_pair
 
         # Se actualiza la poblacion actual
         pob = hijos
@@ -162,16 +162,14 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
     print("El mejor fitness es: ", mejor_fitness) 
     print("El mejor individuo esta ubicado en la posicion: ", np.argmax(mejores))
     mejor_individuo = mejor_par[np.argmax(mejores)]
-    print("El mejor individuo esta ubicado en: ", mejor_individuo)
+    print("El mejor individuo de la ultima generacion esta ubicado en: ", ultimo_mejor)
 
     return [mejor_individuo, mejor_fitness]
 
-
 best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
-                           n_pob, r_cross, r_mut, tipo_optim, func, elit)
-
+                            n_pob, r_cross, r_mut, tipo_optim, func, elit)
 print('Listo!')
-print("El mejor resultado obtenido es el siguiente: ", best)
+print("El mejor resultado obtenido es el siguiente:", best)
 
 #PRIMERA GRAFICA
 fig1 = plt.figure()
