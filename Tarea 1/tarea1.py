@@ -50,7 +50,6 @@ r_mut = 0.1
 elit = 0
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
-# AJUSTAR INVERSA PARA CUANDO ESTE MINIMIZNDO
 
 def F1(x):
     return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4 + 24
@@ -132,7 +131,8 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #               for _ in range(n_pob)]
         
         #Seleccion por Ruleta
-        padres_selec = ruleta(pob,fitness)
+        # padres_selec = ruleta(pob,fitness)
+        padres_selec = uni_estocastica(pob,fitness)
 
         # Se crea la siguiente generacion
         hijos = list()

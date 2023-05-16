@@ -88,7 +88,41 @@ def ruleta(pop, fitness):
                 break
     return elegidos
 
-# Crossover simple entre dos padres_selec para crear 2 hijos
+#-----------------------------UNIVERSAL ESTOCASTICA-------------------------------------
+
+
+def uni_estocastica(pop, fitness):
+    total_fitness = sum(fitness)
+    prom_fit = total_fitness/len(fitness)
+    ei = [fit/prom_fit for fit in fitness] #Arreglo que contiene numero de copias
+    ptr = np.random.uniform(0,1)
+    suma = 0
+    i = 1
+    elegidos = []
+
+    while i<=len(pop):
+        suma = suma + ei[i-1]
+        while suma > ptr:
+            elegidos.append(pop[i-1])
+            ptr = ptr + 1
+        i = i+1
+    
+    return elegidos
+
+#------------------------------------------SOBRANTE ESTOCASTICO----------------------------------------
+
+def sob_estocastico(pop, fitness):
+    total_fitness = sum(fitness)
+    prom_fit = total_fitness/len(fitness)
+    ei = [fit/prom_fit for fit in fitness] #Arreglo que contiene numero de copias
+    enteros = [int(k) for k in ei]
+    residuos = [k%1 for k in ei]
+    elegidos = []
+
+    #Sin reemplazo
+    
+   
+#--------------- Crossover simple entre dos padres_selec para crear 2 hijos-----------
 
 def crossover(p1, p2, r_cross):
     # Los hijos son copias de los padres_selec por default
