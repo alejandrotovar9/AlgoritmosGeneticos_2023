@@ -73,12 +73,12 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
     print("Primer individuo crudo, sin procesar substring:", pob[0])
 
     #Se guarda la mejor solucion inicial dependiendo de la funcion a estudiar
-    if func == 1:
-        best, best_eval = 0, f1(
-            decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
-    else:
-        fbest, best_eval = 0, f2(
-            decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
+    # if func == 1:
+    #     best, best_eval = 0, f1(
+    #         decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
+    # else:
+    #     fbest, best_eval = 0, f2(
+    #         decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
 
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
@@ -178,7 +178,18 @@ plt.xlabel('Generaciones')
 plt.ylabel('Fitness del mejor individuo')
 plt.title('Evolución del Algoritmo Genético')
 
-plt.show()
+if func == 0:
+#Graficando curva promedio 
+    fig2 = plt.figure()
+    plt.plot(generaciones, prom)
+    plt.xlabel('Generaciones')
+    plt.ylabel('Fitness promedio de los individuos')
+    plt.title('Evolución del Algoritmo Genético')
+
+    # Show the plots
+    plt.show()
+
+#plt.show()
 
 #SEGUNDA GRAFICA
 #Sacando datos del arreglo
