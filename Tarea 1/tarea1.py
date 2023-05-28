@@ -20,6 +20,8 @@ from numpy.random import randint
 from numpy.random import rand
 import matplotlib.pyplot as plt
 import numpy as np
+from numpy import sin, cos, pi
+import math
 
 #Definir rango para entrada
 #dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
@@ -28,14 +30,47 @@ print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
 n_iter = 50
 # Definir el numero de bits por variable
-n_bits_1 = 10
+'''n_bits_1 = 10
 n_bits_2 = 10
-n_bits_3 = 10
+n_bits_3 = 10'''
 
+#Incluir relacion entre numero de bits y precision. La precision viene dada por la cantidad de digitos
+#que va a tener el resultado. Segun la cantidad de digitos que tenga, va a cambiar el numero de bits,
+#y viceversa. 
+
+#Para calcular el numero de bits necesarios dada la precision
+pre = 1e-2 #Numero de cifras decimales
+
+n_bits_array = []
+
+#Para calcular el numero de bits necesarios dada la precision\
+for i in range(len(dom)):
+        numero = (dom[i][1] - dom[i][0])/pre
+        n_bits_k = math.ceil(math.log2(numero)) #Redondeo hacia arriba
+        n_bits_array.append(n_bits_k)
+
+if len(dom) == 3:
+    n_bits_1 = n_bits_array[0]
+    n_bits_2 = n_bits_array[1]
+    n_bits_3 = n_bits_array[2]
+
+else:
+    n_bits_1 = n_bits_array[0]
+    n_bits_2 = n_bits_array[1]
+    n_bits_3 = 0
+
+n_bits = sum(n_bits_array)
+print("El numero de bits del genotipo es: ", n_bits)
+
+#Mejor que se escoja la precision y se calcule el numero de bits necesarios a partir del numero de bits. OJO
+
+'''
 if len(dom) == 3:
     n_bits = n_bits_1 + n_bits_2 + n_bits_3
 else:
     n_bits = n_bits_1 + n_bits_2
+'''
+
 # Tamaño de la poblacion
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
@@ -52,11 +87,11 @@ elit = 0
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 
 def F1(x):
-    return x[0] + 2*x[1] - 0.3*np.sin(3*np.pi*x[0])*0.4*np.cos(4*np.pi*x[1]) + 0.4 + 24
+    return x[0] + 2*x[1] - 0.3*sin(3*pi*x[0])*0.4*cos(4*pi*x[1]) + 0.4 + 24
 
 
 def F2(x):
-    return (x[0]*x[0]+x[1]*x[1])**0.25*(1+np.sin(50*(x[0]*x[0]+x[1]*x[1])**0.1)**2) + (x[0]*x[0]+x[2]*x[2])**0.25*(1+np.sin(50*(x[0]*x[0]+x[2]*x[2])**0.1)**2) + (x[2]*x[2]+x[1]*x[1])**0.25*(1+np.sin(50*(x[2]*x[2]+x[1]*x[1])**0.1)**2)
+    return (x[0]*x[0]+x[1]*x[1])**0.25*(1+sin(50*(x[0]*x[0]+x[1]*x[1])**0.1)**2) + (x[0]*x[0]+x[2]*x[2])**0.25*(1+sin(50*(x[0]*x[0]+x[2]*x[2])**0.1)**2) + (x[2]*x[2]+x[1]*x[1])**0.25*(1+sin(50*(x[2]*x[2]+x[1]*x[1])**0.1)**2)
 
 # --------------------------Algoritmo Genetico----------------------------------
 
@@ -85,6 +120,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se decodifica la poblacion, individuo por individuo
         decoded = [decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, p) for p in pob]
+        #decoded = [decode(dom, n_bits_array, n_bits, p) for p in pob]
 
         # Se verifica cual funcion a utilizar
         #Funcion 1
@@ -118,6 +154,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #Sin elitismo, busco el mejor en cada generacion y actualizo
         else:
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
+
             best_index, best_eval = np.argmax(fitness), np.amax(fitness)
             best_pair = decoded[best_index]
             promedio = np.mean(fitness)
@@ -131,8 +168,8 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #               for _ in range(n_pob)]
         
         #Seleccion por Ruleta
-        # padres_selec = ruleta(pob,fitness)
-        padres_selec = uni_estocastica(pob,fitness)
+        padres_selec = ruleta(pob,fitness)
+        #padres_selec = uni_estocastica(pob,fitness)
 
         # Se crea la siguiente generacion
         hijos = list()

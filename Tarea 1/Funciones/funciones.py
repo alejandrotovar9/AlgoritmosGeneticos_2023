@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
+
     decodificado = list()  # Se inicializa una lista
     mayor_valor = 2**n_bits
     # Itero para cada variable
@@ -13,9 +14,11 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
 
         # Se separa el substring en dos o tres cadenas que representan cada variable
         if len(dom) == 2:
+
             start, end = i * n_bits_1, (i * n_bits_2)+n_bits_1
             substring = bitstring[start:end]
         else:
+
             if i == 0:
                 start = 0
                 end = n_bits_1
@@ -37,7 +40,8 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         # Esto nos da el valor en binario
         chars = ''.join([str(s) for s in substring])
         # Se convierte el string a integer
-        integer = int(chars, 2)
+        integer = int(chars, 2) 
+        #floor y ceil biblioteca math buscar...
 
         # Se escala el integer a un valor dentro del rango deseado
         valor = dom[i][0] + (integer/mayor_valor) * (dom[i][1] - dom[i][0])
@@ -49,14 +53,15 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
 #------------------------SELECCION POR TORNEO-------------------------------------------
 
 def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padres_selec
+
     # Primera seleccion aleatoria
     selection_ix = randint(len(pob)) #Indice del individuo seleccionado
 
     #Un problema del torneo es que selecciono dentro de la misma poblacion, cuando
     #deberia descartar a los que ya ganaron en el torneo pasado
 
-    for ix in randint(0, len(pob), k-1):  # Escojo un indice en particular de la poblacion
-        # Chequear si hay alguno mejor (hacer el torneo)
+    for ix in randint(0, len(pob), k-1):  # Escojo un indice aleatorio en particular de la poblacion
+        #Chequear si hay alguno mejor (hacer el torneo)
         if tipo_optim == 1:
             if fitness[ix] > fitness[selection_ix]:
                 selection_ix = ix

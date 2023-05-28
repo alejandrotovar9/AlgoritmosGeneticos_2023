@@ -1,23 +1,48 @@
-import matplotlib.pyplot as plt
 import numpy as np
+import math
 
-# Generate some data
-x = np.linspace(0, 10, 100)
-y = np.sin(x)
+#Definir rango para entrada
+dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
+#dom = [[-8.0, 8.0], [-8.0, 8.0]]
 
-# Create a figure and axis object
-fig, ax = plt.subplots()
+print("Numero de variables:", len(dom))
+# Definir el numero de generaciones
+n_iter = 50
 
-# Plot the data
-ax.plot(x, y)
+# Definir el numero de bits por variable
+n_bits_1 = 10
+n_bits_2 = 10
+n_bits_3 = 10
 
-# Set the x and y axis labels and title
-ax.set_xlabel('x')
-ax.set_ylabel('y')
-ax.set_title('Sin(x)')
+pre = 1e-4 #Numero de cifras decimales
 
-# Show the plot
-plt.show()
+n_bits_array = []
+
+#Para calcular el numero de bits necesarios dada la precision\
+for i in range(len(dom)):
+        np = (dom[i][1] - dom[i][0])/pre
+        print("Np>",np)
+        n_bits_k = math.ceil(math.log2(np)) #Redondeo hacia arriba
+        n_bits_array.append(n_bits_k)
+'''if len(dom) == 3:
+    for i in range(len(dom)):
+        np = (dom[i][1] - dom[i][0])/pre
+        n_bits_k = math.ceil(math.log2(np)) #Redondeo hacia arriba
+        n_bits_array.append(n_bits_k)
+else:
+    for i in range(len(dom)):
+        np = (dom[i][1] - dom[i][0])/pre
+        n_bits_k = math.ceil(math.log2(np)) #Redondeo hacia arriba
+        n_bits_array.append(n_bits_k)
+'''
+
+print(n_bits_array[2])
+print(n_bits_array)
+
+n_bits_array = np.array(n_bits_array)
+
+#Mejor que se escoja la precision y se calcule el numero de bits necesarios a partir del numero de bits. OJO
+
 
 # Define the range of x values
 #x_min, x_max = -8, 8
