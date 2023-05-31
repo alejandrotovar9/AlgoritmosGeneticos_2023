@@ -24,36 +24,28 @@ from numpy import sin, cos, pi
 import math
 
 #Definir rango para entrada
-#dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
-dom = [[-8.0, 8.0], [-8.0, 8.0]]
+dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
+#dom = [[-8.0, 8.0], [-8.0, 8.0]]
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
-n_iter = 50
+n_iter = 100
 # Definir el numero de bits por variable
-'''n_bits_1 = 10
-n_bits_2 = 10
-n_bits_3 = 10'''
-
-#Incluir relacion entre numero de bits y precision. La precision viene dada por la cantidad de digitos
-#que va a tener el resultado. Segun la cantidad de digitos que tenga, va a cambiar el numero de bits,
-#y viceversa. 
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-2 #Numero de cifras decimales
+pre = 1e-2 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
 #Para calcular el numero de bits necesarios dada la precision\
 for i in range(len(dom)):
         numero = (dom[i][1] - dom[i][0])/pre
-        n_bits_k = math.ceil(math.log2(numero)) #Redondeo hacia arriba
+        n_bits_k = math.ceil(math.log2(numero)) #Redondeo hacia arriba numero de bits necesarios
         n_bits_array.append(n_bits_k)
 
 if len(dom) == 3:
     n_bits_1 = n_bits_array[0]
     n_bits_2 = n_bits_array[1]
     n_bits_3 = n_bits_array[2]
-
 else:
     n_bits_1 = n_bits_array[0]
     n_bits_2 = n_bits_array[1]
@@ -62,23 +54,15 @@ else:
 n_bits = sum(n_bits_array)
 print("El numero de bits del genotipo es: ", n_bits)
 
-#Mejor que se escoja la precision y se calcule el numero de bits necesarios a partir del numero de bits. OJO
-
-'''
-if len(dom) == 3:
-    n_bits = n_bits_1 + n_bits_2 + n_bits_3
-else:
-    n_bits = n_bits_1 + n_bits_2
-'''
-
 # Tamaño de la poblacion
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
 tipo_optim = 1
 # Variable que controla si se quiere optimizar la F1 (1) o F2 (0)
-func = 1
+func = 0
 # Tasa de crossover segun Holland
 r_cross = 0.8
+
 # Tasa de mutacion segun Holland
 r_mut = 0.1
 # Elitismo (1) o sin elitismo (0)
@@ -163,12 +147,13 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         # Se hace la seleccion de los padres recorriendo toda la poblacion
         #Se genera un arreglo de padres seleccionados
 
-        #Seleccion por Torneo
+        #------------------------Seleccion por Torneo----------------------------------
         #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
         
-        #Seleccion por Ruleta
+        #------------------------Seleccion por Ruleta----------------------------------
         padres_selec = ruleta(pob,fitness)
+
         #padres_selec = uni_estocastica(pob,fitness)
 
         # Se crea la siguiente generacion
