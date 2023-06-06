@@ -50,6 +50,32 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         decodificado.append(valor)
     return decodificado
 
+#-----------------------RENORMALIZACION LINEAL------------------------------------------
+
+def renorm_lineal(fitness, pob, dec, max_fit):
+    # Se crea arreglo de index
+    indices = list(range(len(fitness)))
+
+    #Se arregla el arreglo de indices de mayor a menor con base en el arreglo1
+    indices.sort(key=lambda i: fitness[i], reverse=True)
+
+    #Se usa el arreglo de indices arreglados para sortear los 2 originales
+    sorted_fitness = [fitness[i] for i in indices]
+    sorted_pob = [pob[i] for i in indices]
+
+    #Se inicializa arreglo vacio para el fitness renormlaizado
+    fit_renorm = []
+    num = 0
+
+    for k in range(len(pob)):
+        if k == 0:
+            num = max_fit
+        else:
+            num = num - dec
+        fit_renorm.append(num)
+
+    return fit_renorm, sorted_pob
+
 #------------------------SELECCION POR TORNEO-------------------------------------------
 
 def selection(pob, fitness, tipo_optim, k=3):  # k representa el numero de padres_selec
@@ -100,10 +126,10 @@ def uni_estocastica(pop, fitness):
     total_fitness = sum(fitness)
     prom_fit = total_fitness/len(fitness)
     ei = [fit/prom_fit for fit in fitness] #Arreglo que contiene numero de copias
-    ptr = np.random.uniform(0,1)
+    ptr = np.random.uniform(0,1) #Genero numero aleatorio
     suma = 0
     i = 1
-    elegidos = []
+    elegidos = [] #Arreglo para guardar individuos seleccionados
 
     while i<=len(pop):
         suma = suma + ei[i-1]

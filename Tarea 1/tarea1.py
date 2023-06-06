@@ -24,8 +24,8 @@ from numpy import sin, cos, pi
 import math
 
 #Definir rango para entrada
-dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
-#dom = [[-8.0, 8.0], [-8.0, 8.0]]
+#dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
+dom = [[-8.0, 8.0], [-8.0, 8.0]]
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
 n_iter = 100
@@ -50,7 +50,7 @@ else:
     n_bits_1 = n_bits_array[0]
     n_bits_2 = n_bits_array[1]
     n_bits_3 = 0
-
+print(n_bits_array)
 n_bits = sum(n_bits_array)
 print("El numero de bits del genotipo es: ", n_bits)
 
@@ -58,15 +58,18 @@ print("El numero de bits del genotipo es: ", n_bits)
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
 tipo_optim = 1
-# Variable que controla si se quiere optimizar la F1 (1) o F2 (0)
-func = 0
+# Variable que controla si se quiere optimizar la F1 (1) o F2 (2)
+func = 1
 # Tasa de crossover segun Holland
 r_cross = 0.8
-
 # Tasa de mutacion segun Holland
 r_mut = 0.1
 # Elitismo (1) o sin elitismo (0)
-elit = 0
+elit = 1
+#Parametros de la renormalizacion lineal
+renorm = 1 #Para escoger si se hace la renormalizacion 
+dec_renorm, max_fit = 1, 50
+
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 
@@ -91,13 +94,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
     print("Primer individuo crudo, sin procesar substring:", pob[0])
 
-    #Se guarda la mejor solucion inicial dependiendo de la funcion a estudiar
-    # if func == 1:
-    #     best, best_eval = 0, f1(
-    #         decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
-    # else:
-    #     fbest, best_eval = 0, f2(
-    #         decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
+    
 
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
@@ -112,36 +109,52 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
             fitness = [f1(d) for d in decoded]
         elif func == 1 and tipo_optim == 0:
             fitness = [1/f1(d) for d in decoded]
-        elif func == 0 and tipo_optim == 1:
+        elif func == 2 and tipo_optim == 1:
             fitness = [f2(d) for d in decoded]
-        elif func == 0 and tipo_optim == 0:
+        elif func == 2 and tipo_optim == 0:
             fitness = [1/f2(d) for d in decoded]
 
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
-        # Elitismo
-        if elit == 1:
-            if tipo_optim == 1:
-                for i in range(n_pob):
-                    if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
-                        best, best_eval = pob[i], fitness[i]
-                        print(">%d, nuevo mejor f(%s) = %f" %
-                              (gen, decoded[i], fitness[i]))
-            else:
-                for i in range(n_pob):
-                    if fitness[i] < best_eval:  # Esta linea define si busco el maximo o el minimo
-                        best, best_eval = pob[i], fitness[i]
-                        print(">%d, nuevo mejor f(%s) = %f" %
-                              (gen, decoded[i], fitness[i]))
+        if renorm == 1:
+            fitness_norm, pob_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
+
+        # Elitismo            
+        # if elit == 1:
+
+        #     if func == 1:
+        #         best_eval = f1(
+        #             decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
+        #     else:
+        #         best_eval = f2(
+        #             decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
+                
+        #     for i in range(n_pob):
+        #         if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
+        #             index = i
+        #             print("El valor de i es: ", i)
+        #             best_fit = fitness[i]
+        #             #El mejor individuo será entonces
+        #             #best_individuo = decoded[i]
+
+        #                 #print(">%d, nuevo mejor f(%s) = %f" % (gen, decoded[i], fitness[i]))
+
+        #     best_index, best_eval = index, best_fit
+        #     best_pair = decoded[best_index]
+        #     print("Hola")
+        #     print(pob[best_index])
+        #     print("El mejor individuo es", best_pair)
+        #     promedio = np.mean(fitness)
+            
                         
         #Sin elitismo, busco el mejor en cada generacion y actualizo
-        else:
             # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
 
-            best_index, best_eval = np.argmax(fitness), np.amax(fitness)
-            best_pair = decoded[best_index]
-            promedio = np.mean(fitness)
+        best_index, best_eval = np.argmax(fitness), np.amax(fitness)
+        best_pair = decoded[best_index]
+        promedio = np.mean(fitness)
+        mejor_binario = pob[best_index]
 
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
@@ -152,7 +165,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #               for _ in range(n_pob)]
         
         #------------------------Seleccion por Ruleta----------------------------------
-        padres_selec = ruleta(pob,fitness)
+        padres_selec = ruleta(pob_norm,fitness_norm)
 
         #padres_selec = uni_estocastica(pob,fitness)
 
@@ -178,6 +191,9 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se actualiza la poblacion actual
         pob = hijos
+        #Actualizacion por elitismo
+        if elit == 1:
+            pob[best_index] = mejor_binario
 
     #Mejor individuo de todas las generaciones
     mejor_fitness = np.amax(mejores)
