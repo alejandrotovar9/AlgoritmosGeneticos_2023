@@ -14,7 +14,7 @@
 
 # Importando librerias necesarias
 
-from Funciones.funciones import *  # Importando archivo que contiene las funciones
+from Funciones.funciones2 import *  # Importando archivo que contiene las funciones
 
 from numpy.random import randint
 from numpy.random import rand
@@ -24,19 +24,23 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-#dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
-dom = [[-8.0, 8.0], [-8.0, 8.0]]
+dom = [-10.0,10.0],[-10.0,10.0] #F1
+#dom = [-100.0,100.0],[-100.0,100.0] #F2
+#dom = [-3,12.1],[4.1,5.8] #F3
+#dom = [-100.0,100.0],[-100.0,100.0] #F4
+
+dom = [[-10.0, 10.0], [-10.0, 10.0]]
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
 n_iter = 50
 # Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-3 #Numero de cifras decimales/ precision
+pre = 1e-2 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
-#Para calcular el numero de bits necesarios dada la precision
+#Para calcular el numero de bits necesarios dada la precision\
 for i in range(len(dom)):
         numero = (dom[i][1] - dom[i][0])/pre
         n_bits_k = math.ceil(math.log2(numero)) #Redondeo hacia arriba numero de bits necesarios
@@ -65,16 +69,16 @@ r_cross = 0.8
 # Tasa de mutacion segun Holland
 r_mut = 0.1
 # Elitismo (1) o sin elitismo (0)
-elit = 0
+elit = 1
 #Parametros de la renormalizacion lineal
-renorm = 0 #Para escoger si se hace la renormalizacion 
+renorm = 1 #Para escoger si se hace la renormalizacion 
 dec_renorm, max_fit = 1, 50
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 
 def F1(x):
-    return x[0] + 2*x[1] - 0.3*sin(3*pi*x[0])*0.4*cos(4*pi*x[1]) + 0.4 + 24
+    return x[0]**2 + 2*(x[0]**2) - 0.3*cos(3*pi*x[0]) - 0.4*cos(4*pi*x[1]) + 0.7
 
 def F2(x):
     return (x[0]*x[0]+x[1]*x[1])**0.25*(1+sin(50*(x[0]*x[0]+x[1]*x[1])**0.1)**2) + (x[0]*x[0]+x[2]*x[2])**0.25*(1+sin(50*(x[0]*x[0]+x[2]*x[2])**0.1)**2) + (x[2]*x[2]+x[1]*x[1])**0.25*(1+sin(50*(x[2]*x[2]+x[1]*x[1])**0.1)**2)
@@ -155,7 +159,10 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #               for _ in range(n_pob)]
         
         #------------------------Seleccion por Ruleta----------------------------------
-        padres_selec = ruleta(pob,fitness)
+        if renorm == 1:
+            padres_selec = ruleta(pob_norm,fitness_norm)
+        else:
+            padres_selec = ruleta(pob, fitness)
 
         #padres_selec = uni_estocastica(pob,fitness)
 
@@ -181,7 +188,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
         # Se actualiza la poblacion actual
         pob = hijos
-        #Actualizacion por elitismo
+        #Actualizacion por elitismo, mantengo el mejor individuo en la posicion en la que estaba
         if elit == 1:
             pob[best_index] = mejor_binario
 
