@@ -1,5 +1,5 @@
 # Tarea 1 - Algoritmos Geneticos para Ingenieros
-# Jose Tovar - jatovar02@gmail.com
+# Jose Tovar
 # Profa. Tamara Perez
 # E.I.E - UCV
 
