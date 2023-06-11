@@ -15,6 +15,7 @@
 # Importando librerias necesarias
 
 from Funciones.funciones2 import *  # Importando archivo que contiene las funciones
+from Graficas.graficas2 import *
 
 from numpy.random import randint
 from numpy.random import rand
@@ -61,6 +62,9 @@ n_pob = 50
 tipo_optim = 1
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
 func = 2
+print("Se esta aplicando el AG a la Funcion", func)
+print("La funcion se esta", "maximizando." if tipo_optim == 1 else "minimizando." if 
+      tipo_optim == 0 else "Introduzca una operacion correcta")
 # Tasa de crossover segun Holland
 r_cross = 0.8
 # Tasa de mutacion segun Holland
@@ -74,6 +78,8 @@ dec_renorm, max_fit = 1, 50
 gap_gen = 1
 #Porcentaje de la poblacion que se cambia
 p_gap = 10
+#Sin duplicado (1), permite la existencia de duplicados (0)
+dupli =1
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
@@ -135,18 +141,16 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         mejor_binario = pob[best_index]
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
-        #Se genera un arreglo de padres seleccionados
-
         #------------------------Seleccion por Torneo----------------------------------
         #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
         
         #------------------------Seleccion por Ruleta----------------------------------
         if renorm == 1:
-            #padres_selec = ruleta(pob_norm,fitness_norm)
-            padres_selec = uni_estocastica(pob_norm,fitness_norm)
-            #padres_selec = [selection(pob, fitness, tipo_optim)
-        #               for _ in range(n_pob)]
+            padres_selec = ruleta(pob_norm,fitness_norm)
+            #padres_selec = uni_estocastica(pob_norm,fitness_norm)
+            #padres_selec = [selection(pob_norm, fitness_norm, tipo_optim)
+            #           for _ in range(n_pob)]
         else:
             padres_selec = ruleta(pob, fitness)
             #padres_selec = uni_estocastica(pob,fitness)
@@ -180,9 +184,11 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
             for k in range(len(pob) - 1, len(pob) - p_gap - 1, -1): #Recorre desde el ultimo individuo
                 num_rand = randint(0, len(pob)- 1)
                 #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
-                pob[indices_norm[k]] = hijos[num_rand]
+                if dupli == 1:
+                    while hijos[num_rand] in pob:
+                        num_rand = randint(0, len(pob)- 1)
+                    pob[indices_norm[k]] = hijos[num_rand]
                 peores_indiv.append(indices_norm[k]) #Guardo la ubicacion de los que sustitui en la nueva poblacion
-
 
         else:
             # Se actualiza la poblacion actual
@@ -212,57 +218,15 @@ best, puntuacion = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
 print('Listo!')
 print("El mejor resultado obtenido es el siguiente:", best)
 
-# # Create a figure with two subplots side by side
-# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+#Escoger la funcion a graficar
 
-# #PRIMERA GRAFICA
-# fig1 = plt.figure()
-# plt.plot(generaciones, mejores)
-# plt.xlabel('Generaciones')
-# plt.ylabel('Fitness del mejor individuo')
-# plt.title('Evolución del Algoritmo Genético')
+if func == 1:
+    plot_func = F1
+elif func == 2:
+    plot_func = F2
+elif func == 3:
+    plot_func = F3
 
-#SEGUNDA GRAFICA
-#Sacando datos del arreglo
-
-fig1 = plt.figure()
-mejor_par = np.array(mejor_par)
-# Evaluate the F function for each pair
-W = np.zeros(n_iter)
-for i in range(n_iter):
-    W[i] = F1(mejor_par[i])
-# Create a scatter plot of the x-y value pairs with the W values as color
-plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
-#identificando los puntos
-# Add text labels to the plot
-for i in range(n_iter):
-    plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
-# Add colorbar and labels to the plot
-plt.colorbar()
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
-#Graficando curva promedio 
-# fig3 = plt.figure()
-# plt.plot(generaciones, prom)
-# plt.xlabel('Generaciones')
-# plt.ylabel('Fitness promedio de los individuos')
-# plt.title('Evolución del Algoritmo Genético')
-
-# Create a figure with two subplots side by side
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
-
-# Plot the first figure on the first subplot
-ax1.plot(generaciones, mejores)
-ax1.set_xlabel('Generaciones')
-ax1.set_ylabel('Fitness del mejor individuo')
-ax1.set_title('Evolución del Algoritmo Genético')
-
-# Plot the third figure on the second subplot
-ax2.plot(generaciones, prom)
-ax2.set_xlabel('Generaciones')
-ax2.set_ylabel('Fitness promedio de los individuos')
-ax2.set_title('Evolución del Algoritmo Genético')
-
-# Show the plots
-plt.show()
+#Funciones para graficar
+figuras1(mejor_par, n_iter, plot_func)
+figuras2(generaciones, mejores, prom)

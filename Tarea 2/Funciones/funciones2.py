@@ -121,11 +121,10 @@ def ruleta(pop, fitness):
 
 #-----------------------------UNIVERSAL ESTOCASTICA-------------------------------------
 
-
 def uni_estocastica(pop, fitness):
-    total_fitness = sum(fitness)
-    prom_fit = total_fitness/len(fitness)
-    ei = [fit/prom_fit for fit in fitness] #Arreglo que contiene numero de copias
+    total_fitness = np.sum(fitness)
+    prom_fit = total_fitness / len(fitness)
+    ei = [fit / prom_fit for fit in fitness] #Arreglo que contiene numero de copias
     ptr = np.random.uniform(0,1) #Genero numero aleatorio
     suma = 0
     i = 1
