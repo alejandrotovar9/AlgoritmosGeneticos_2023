@@ -30,10 +30,10 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
                 end = n_bits_1 + n_bits_2 + n_bits_3
             substring = bitstring[start:end]
 
-        #valor_max = 2**len(substring)
+        valor_max = 2**len(substring)
 
-        while len(substring) < n_bits:
-            substring.append(0)
+        #while len(substring) < n_bits:
+         #   substring.append(0)
         
         # Se convierte el substring a un string de chars
 
@@ -44,7 +44,7 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         #El mayor valor posible vendra dado por el numero de bits del substring antes de llenar de 0
         
         # Se escala el integer a un valor dentro del rango deseado
-        valor = dom[i][0] + (integer/(mayor_valor-1)) * (dom[i][1] - dom[i][0])
+        valor = dom[i][0] + (integer/(valor_max-1)) * (dom[i][1] - dom[i][0])
 
         # Guardo en la lista inicial
         decodificado.append(valor)
@@ -74,7 +74,7 @@ def renorm_lineal(fitness, pob, dec, max_fit):
             num = num - dec
         fit_renorm.append(num)
 
-    return fit_renorm, sorted_pob
+    return fit_renorm, sorted_pob, indices
 
 #------------------------SELECCION POR TORNEO-------------------------------------------
 

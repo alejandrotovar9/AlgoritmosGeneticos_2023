@@ -1,5 +1,5 @@
-# Tarea 1 - Algoritmos Geneticos para Ingenieros
-# Jose Tovar - jatovar02@gmail.com
+# Tarea 2 - Algoritmos Geneticos para Ingenieros
+# Jose Tovar
 # Profa. Tamara Perez
 # E.I.E - UCV
 
@@ -25,14 +25,13 @@ import math
  
 #Definir rango para entrada
 #dom = [[-10.0,10.0],[-10.0,10.0]] #F1
-dom = [-100.0,100.0],[-100.0,100.0] #F2
-#dom = [-3,12.1],[4.1,5.8] #F3
+dom = [[-100.0,100.0],[-100.0,100.0]] #F2
+#dom = [[-3,12.1],[4.1,5.8]] #F3
 #dom = [-100.0,100.0],[-100.0,100.0] #F4
 
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
 n_iter = 100
-# Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
 pre = 1e-5 #Numero de cifras decimales/ precision
@@ -60,7 +59,7 @@ print("El numero de bits del genotipo es: ", n_bits)
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
 tipo_optim = 1
-# Variable que controla si se quiere optimizar la F1 (1) o F2 (2)
+# Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
 func = 2
 # Tasa de crossover segun Holland
 r_cross = 0.8
@@ -74,7 +73,7 @@ dec_renorm, max_fit = 1, 50
 #GAP GENERACIONAL. Activado (1), Desactivado (0)
 gap_gen = 1
 #Porcentaje de la poblacion que se cambia
-p_gap = 0.1
+p_gap = 10
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
@@ -95,7 +94,7 @@ indices = []
 mejor_par = []
 prom = []
 
-def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
+def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
     pob = [randint(0, 2, size=n_bits).tolist() for _ in range(n_pob)]
     
@@ -106,50 +105,34 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         decoded = [decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, p) for p in pob]
         #decoded = [decode(dom, n_bits_array, n_bits, p) for p in pob]
 
-        # Se verifica cual funcion a utilizar
+        # Se verifica cual funcion a utilizar                
+
         #Funcion 1
         if func == 1 and tipo_optim == 1:
             fitness = [f1(d) for d in decoded]
         elif func == 1 and tipo_optim == 0:
             fitness = [1/f1(d) for d in decoded]
+        #Funcion 2
         elif func == 2 and tipo_optim == 1:
             fitness = [f2(d) for d in decoded]
         elif func == 2 and tipo_optim == 0:
             fitness = [1/f2(d) for d in decoded]
+        #Funcion 3
+        elif func == 3 and tipo_optim == 1:
+            fitness = [f3(d) for d in decoded]
+        elif func == 3 and tipo_optim == 0:
+            fitness = [1/f3(d) for d in decoded]
 
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
         if renorm == 1:
-            fitness_norm, pob_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
-
-        # Elitismo            
-        # if elit == 1:
-
-        #     if func == 1:
-        #         best_eval = f1(
-        #             decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
-        #     else:
-        #         best_eval = f2(
-        #             decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, pob[0]))
-                
-        #     for i in range(n_pob):
-        #         if fitness[i] > best_eval:  # Esta linea define si busco el maximo o el minimo
-        #             index = i
-        #             print("El valor de i es: ", i)
-        #             best_fit = fitness[i]
-        #             #El mejor individuo será entonces
-        #             #best_individuo = decoded[i]
-            
+            fitness_norm, pob_norm, indices_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
                         
-        #Sin elitismo, busco el mejor en cada generacion y actualizo
-            # Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
-
         best_index, best_eval = np.argmax(fitness), np.amax(fitness)
         best_pair = decoded[best_index]
         promedio = np.mean(fitness)
         mejor_binario = pob[best_index]
-
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
         #Se genera un arreglo de padres seleccionados
@@ -160,21 +143,18 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         
         #------------------------Seleccion por Ruleta----------------------------------
         if renorm == 1:
-            padres_selec = ruleta(pob_norm,fitness_norm)
-            #padres_selec = uni_estocastica(pob_norm,fitness_norm)
+            #padres_selec = ruleta(pob_norm,fitness_norm)
+            padres_selec = uni_estocastica(pob_norm,fitness_norm)
+            #padres_selec = [selection(pob, fitness, tipo_optim)
+        #               for _ in range(n_pob)]
         else:
             padres_selec = ruleta(pob, fitness)
             #padres_selec = uni_estocastica(pob,fitness)
             #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
         
-        
-
-
-
         # Se crea la siguiente generacion
         hijos = list()
-
 
         for i in range(0, n_pob, 2):  # Pasos de dos
             # Se arreglan los padres seleccionados en pares
@@ -192,12 +172,18 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         mejor_par.append(best_pair)
         prom.append(promedio)
         ultimo_mejor = best_pair
+        
+        peores_indiv= []
 
-        #Gap Generacional
-        if gap_gen==1:
-            for k in range(len(pob), p_gap*100 - 1, -1): #Recorre la poblacion desde el ultimo individuo
-                num_rand = rand(0, len(pob)- 1)
-                pob[k] = hijos[num_rand]
+        #Gap Generacional si se renormaliza
+        if gap_gen==1 and renorm==1:
+            for k in range(len(pob) - 1, len(pob) - p_gap - 1, -1): #Recorre desde el ultimo individuo
+                num_rand = randint(0, len(pob)- 1)
+                #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
+                pob[indices_norm[k]] = hijos[num_rand]
+                peores_indiv.append(indices_norm[k]) #Guardo la ubicacion de los que sustitui en la nueva poblacion
+
+
         else:
             # Se actualiza la poblacion actual
             pob = hijos
@@ -207,7 +193,9 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #sacar uno que este en una posicion aleatoria entre 0 y 100
         
         if elit == 1:
-            random_index = randint(0, len(pob)- 1) #Se genera la posicion aleatoria que sustuire por el mejor individuo
+            random_index = randint(0, len(pob)-1) #Se genera la posicion aleatoria que sustuire por el mejor individuo
+            while random_index in peores_indiv:
+                random_index = randint(0, len(pob)-1)
             pob[random_index] = mejor_binario
 
     #Mejor individuo de todas las generaciones
@@ -219,7 +207,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
 
     return [mejor_individuo, mejor_fitness]
 
-best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
+best, puntuacion = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
                             n_pob, r_cross, r_mut, tipo_optim, func, elit)
 print('Listo!')
 print("El mejor resultado obtenido es el siguiente:", best)
