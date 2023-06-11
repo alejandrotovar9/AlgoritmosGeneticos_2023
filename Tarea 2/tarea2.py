@@ -25,8 +25,8 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-#dom = [[-10.0,10.0],[-10.0,10.0]] #F1
-dom = [[-100.0,100.0],[-100.0,100.0]] #F2
+dom = [[-10.0,10.0],[-10.0,10.0]] #F1
+#dom = [[-100.0,100.0],[-100.0,100.0]] #F2
 #dom = [[-3,12.1],[4.1,5.8]] #F3
 #dom = [-100.0,100.0],[-100.0,100.0] #F4
 
@@ -35,7 +35,7 @@ print("Numero de variables:", len(dom))
 n_iter = 100
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-5 #Numero de cifras decimales/ precision
+pre = 1e-3 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
@@ -59,12 +59,14 @@ print("El numero de bits del genotipo es: ", n_bits)
 # Tamaño de la poblacion
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 1
+tipo_optim = 0
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
-func = 2
+func = 1
+
 print("Se esta aplicando el AG a la Funcion", func)
 print("La funcion se esta", "maximizando." if tipo_optim == 1 else "minimizando." if 
       tipo_optim == 0 else "Introduzca una operacion correcta")
+
 # Tasa de crossover segun Holland
 r_cross = 0.8
 # Tasa de mutacion segun Holland
@@ -88,7 +90,7 @@ def F1(x):
     return x[0]**2 + 2*(x[1]**2) - 0.3*cos(3*pi*x[0]) - 0.4*cos(4*pi*x[1]) + 0.7
 
 def F2(x):
-    return 0.5 - (sin(math.sqrt(x[0]**2+x[1]**2))**2 - 0.5)/(1 + 0.001*(x[0]**2 + x[1]**2))**2
+    return 0.5 - (sin(np.sqrt(x[0]**2+x[1]**2))**2 - 0.5)/(1 + 0.001*(x[0]**2 + x[1]**2))**2
 
 def F3(x):
     return 21.5 + x[0]*sin(4*pi*x[0]) + x[1]*sin(20*pi*x[1])
@@ -149,8 +151,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         if renorm == 1:
             padres_selec = ruleta(pob_norm,fitness_norm)
             #padres_selec = uni_estocastica(pob_norm,fitness_norm)
-            #padres_selec = [selection(pob_norm, fitness_norm, tipo_optim)
-            #           for _ in range(n_pob)]
+            #padres_selec = [selection(pob_norm, fitness_norm, tipo_optim) for _ in range(n_pob)]
         else:
             padres_selec = ruleta(pob, fitness)
             #padres_selec = uni_estocastica(pob,fitness)
@@ -230,3 +231,5 @@ elif func == 3:
 #Funciones para graficar
 figuras1(mejor_par, n_iter, plot_func)
 figuras2(generaciones, mejores, prom)
+figuras3(plot_func, mejor_par, dom)
+
