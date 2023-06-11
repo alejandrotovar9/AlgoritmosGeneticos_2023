@@ -30,21 +30,21 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
                 end = n_bits_1 + n_bits_2 + n_bits_3
             substring = bitstring[start:end]
 
+        #valor_max = 2**len(substring)
+
         while len(substring) < n_bits:
             substring.append(0)
         
-        #print("El substring es: ", substring)
-
         # Se convierte el substring a un string de chars
 
         # Esto nos da el valor en binario
         chars = ''.join([str(s) for s in substring])
         # Se convierte el string a integer
         integer = int(chars, 2) 
-        #floor y ceil biblioteca math buscar...
-
+        #El mayor valor posible vendra dado por el numero de bits del substring antes de llenar de 0
+        
         # Se escala el integer a un valor dentro del rango deseado
-        valor = dom[i][0] + (integer/mayor_valor) * (dom[i][1] - dom[i][0])
+        valor = dom[i][0] + (integer/(mayor_valor-1)) * (dom[i][1] - dom[i][0])
 
         # Guardo en la lista inicial
         decodificado.append(valor)

@@ -24,19 +24,18 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-dom = [-10.0,10.0],[-10.0,10.0] #F1
-#dom = [-100.0,100.0],[-100.0,100.0] #F2
+#dom = [[-10.0,10.0],[-10.0,10.0]] #F1
+dom = [-100.0,100.0],[-100.0,100.0] #F2
 #dom = [-3,12.1],[4.1,5.8] #F3
 #dom = [-100.0,100.0],[-100.0,100.0] #F4
 
-dom = [[-10.0, 10.0], [-10.0, 10.0]]
 print("Numero de variables:", len(dom))
 # Definir el numero de generaciones
-n_iter = 50
+n_iter = 100
 # Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-2 #Numero de cifras decimales/ precision
+pre = 1e-5 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
@@ -54,16 +53,15 @@ else:
     n_bits_1 = n_bits_array[0]
     n_bits_2 = n_bits_array[1]
     n_bits_3 = 0
-print(n_bits_array)
 n_bits = sum(n_bits_array)
 print("El numero de bits del genotipo es: ", n_bits)
 
 # Tamaño de la poblacion
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 0
+tipo_optim = 1
 # Variable que controla si se quiere optimizar la F1 (1) o F2 (2)
-func = 1
+func = 2
 # Tasa de crossover segun Holland
 r_cross = 0.8
 # Tasa de mutacion segun Holland
@@ -73,16 +71,22 @@ elit = 1
 #Parametros de la renormalizacion lineal
 renorm = 1 #Para escoger si se hace la renormalizacion 
 dec_renorm, max_fit = 1, 50
+#GAP GENERACIONAL. Activado (1), Desactivado (0)
+gap_gen = 1
+#Porcentaje de la poblacion que se cambia
+p_gap = 0.1
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
 
 def F1(x):
-    return x[0]**2 + 2*(x[0]**2) - 0.3*cos(3*pi*x[0]) - 0.4*cos(4*pi*x[1]) + 0.7
+    return x[0]**2 + 2*(x[1]**2) - 0.3*cos(3*pi*x[0]) - 0.4*cos(4*pi*x[1]) + 0.7
 
 def F2(x):
-    return (x[0]*x[0]+x[1]*x[1])**0.25*(1+sin(50*(x[0]*x[0]+x[1]*x[1])**0.1)**2) + (x[0]*x[0]+x[2]*x[2])**0.25*(1+sin(50*(x[0]*x[0]+x[2]*x[2])**0.1)**2) + (x[2]*x[2]+x[1]*x[1])**0.25*(1+sin(50*(x[2]*x[2]+x[1]*x[1])**0.1)**2)
+    return 0.5 - (sin(math.sqrt(x[0]**2+x[1]**2))**2 - 0.5)/(1 + 0.001*(x[0]**2 + x[1]**2))**2
 
+def F3(x):
+    return 21.5 + x[0]*sin(4*pi*x[0]) + x[1]*sin(20*pi*x[1])
 # --------------------------Algoritmo Genetico----------------------------------
 
 mejores = []
@@ -94,11 +98,7 @@ prom = []
 def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
     pob = [randint(0, 2, size=n_bits).tolist() for _ in range(n_pob)]
-
-    print("Primer individuo crudo, sin procesar substring:", pob[0])
-
     
-
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
 
@@ -161,13 +161,20 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #------------------------Seleccion por Ruleta----------------------------------
         if renorm == 1:
             padres_selec = ruleta(pob_norm,fitness_norm)
+            #padres_selec = uni_estocastica(pob_norm,fitness_norm)
         else:
             padres_selec = ruleta(pob, fitness)
+            #padres_selec = uni_estocastica(pob,fitness)
+            #padres_selec = [selection(pob, fitness, tipo_optim)
+        #               for _ in range(n_pob)]
+        
+        
 
-        #padres_selec = uni_estocastica(pob,fitness)
+
 
         # Se crea la siguiente generacion
         hijos = list()
+
 
         for i in range(0, n_pob, 2):  # Pasos de dos
             # Se arreglan los padres seleccionados en pares
@@ -186,11 +193,22 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         prom.append(promedio)
         ultimo_mejor = best_pair
 
-        # Se actualiza la poblacion actual
-        pob = hijos
+        #Gap Generacional
+        if gap_gen==1:
+            for k in range(len(pob), p_gap*100 - 1, -1): #Recorre la poblacion desde el ultimo individuo
+                num_rand = rand(0, len(pob)- 1)
+                pob[k] = hijos[num_rand]
+        else:
+            # Se actualiza la poblacion actual
+            pob = hijos
+
         #Actualizacion por elitismo, mantengo el mejor individuo en la posicion en la que estaba
+        #Es mejor hacer append al vector habiendo generado solo 99 individuos, o en su defecto,
+        #sacar uno que este en una posicion aleatoria entre 0 y 100
+        
         if elit == 1:
-            pob[best_index] = mejor_binario
+            random_index = randint(0, len(pob)- 1) #Se genera la posicion aleatoria que sustuire por el mejor individuo
+            pob[random_index] = mejor_binario
 
     #Mejor individuo de todas las generaciones
     mejor_fitness = np.amax(mejores)
@@ -206,59 +224,57 @@ best, puntuacion = alg_gen(F1, F2, dom, n_bits, n_iter,
 print('Listo!')
 print("El mejor resultado obtenido es el siguiente:", best)
 
-#PRIMERA GRAFICA
-fig1 = plt.figure()
-plt.plot(generaciones, mejores)
-plt.xlabel('Generaciones')
-plt.ylabel('Fitness del mejor individuo')
-plt.title('Evolución del Algoritmo Genético')
+# # Create a figure with two subplots side by side
+# fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
 
-if func == 0:
-#Graficando curva promedio 
-    fig2 = plt.figure()
-    plt.plot(generaciones, prom)
-    plt.xlabel('Generaciones')
-    plt.ylabel('Fitness promedio de los individuos')
-    plt.title('Evolución del Algoritmo Genético')
-
-    # Show the plots
-    plt.show()
-
-#plt.show()
+# #PRIMERA GRAFICA
+# fig1 = plt.figure()
+# plt.plot(generaciones, mejores)
+# plt.xlabel('Generaciones')
+# plt.ylabel('Fitness del mejor individuo')
+# plt.title('Evolución del Algoritmo Genético')
 
 #SEGUNDA GRAFICA
 #Sacando datos del arreglo
 
-if func==1:
+fig1 = plt.figure()
+mejor_par = np.array(mejor_par)
+# Evaluate the F function for each pair
+W = np.zeros(n_iter)
+for i in range(n_iter):
+    W[i] = F1(mejor_par[i])
+# Create a scatter plot of the x-y value pairs with the W values as color
+plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
+#identificando los puntos
+# Add text labels to the plot
+for i in range(n_iter):
+    plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
+# Add colorbar and labels to the plot
+plt.colorbar()
+plt.xlabel('x')
+plt.ylabel('y')
+plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
+#Graficando curva promedio 
+# fig3 = plt.figure()
+# plt.plot(generaciones, prom)
+# plt.xlabel('Generaciones')
+# plt.ylabel('Fitness promedio de los individuos')
+# plt.title('Evolución del Algoritmo Genético')
 
-    fig2 = plt.figure()
-    mejor_par = np.array(mejor_par)
+# Create a figure with two subplots side by side
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
 
-    # Evaluate the F function for each pair
-    W = np.zeros(n_iter)
-    for i in range(n_iter):
-        W[i] = F1(mejor_par[i])
+# Plot the first figure on the first subplot
+ax1.plot(generaciones, mejores)
+ax1.set_xlabel('Generaciones')
+ax1.set_ylabel('Fitness del mejor individuo')
+ax1.set_title('Evolución del Algoritmo Genético')
 
-    # Create a scatter plot of the x-y value pairs with the W values as color
-    plt.scatter(mejor_par[:, 0], mejor_par[:, 1], c=W, s=20)
+# Plot the third figure on the second subplot
+ax2.plot(generaciones, prom)
+ax2.set_xlabel('Generaciones')
+ax2.set_ylabel('Fitness promedio de los individuos')
+ax2.set_title('Evolución del Algoritmo Genético')
 
-    #identificando los puntos
-    # Add text labels to the plot
-    for i in range(n_iter):
-        plt.text(mejor_par[i, 0], mejor_par[i, 1], i+1, ha='center', va='center')
-
-    # Add colorbar and labels to the plot
-    plt.colorbar()
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
-
-    #Graficando curva promedio 
-    fig3 = plt.figure()
-    plt.plot(generaciones, prom)
-    plt.xlabel('Generaciones')
-    plt.ylabel('Fitness promedio de los individuos')
-    plt.title('Evolución del Algoritmo Genético')
-
-    # Show the plots
-    plt.show()
+# Show the plots
+plt.show()
