@@ -25,17 +25,39 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-dom = [[-10.0,10.0],[-10.0,10.0]] #F1
-#dom = [[-100.0,100.0],[-100.0,100.0]] #F2
-#dom = [[-3,12.1],[4.1,5.8]] #F3
-#dom = [-100.0,100.0],[-100.0,100.0] #F4
+dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
+#dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
+#dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
+#dom = [-100.0,100.0],[-100.0,100.0] #F4 Minimizar
 
-print("Numero de variables:", len(dom))
+# Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
+tipo_optim = 0
+# Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
+func = 1
+# Tamaño de la poblacion
+n_pob = 50
 # Definir el numero de generaciones
 n_iter = 100
+# Tasa de crossover segun Holland
+r_cross = 0.9
+# Tasa de mutacion segun Holland
+r_mut = 0.01
+# Elitismo (1) o sin elitismo (0)
+elit = 1
+#Parametros de la renormalizacion lineal
+renorm = 1 #Para escoger si se hace la renormalizacion 
+dec_renorm, max_fit = 1, 100
+#GAP GENERACIONAL. Activado (1), Desactivado (0)
+gap_gen = 1
+#Porcentaje de la poblacion que se cambia
+p_gap = 10
+#Sin duplicado (1), permite la existencia de duplicados (0)
+dupli =1
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-3 #Numero de cifras decimales/ precision
+pre = 1e-4 #Numero de cifras decimales/ precision
+
+print("Numero de variables:", len(dom))
 
 n_bits_array = []
 
@@ -56,32 +78,9 @@ else:
 n_bits = sum(n_bits_array)
 print("El numero de bits del genotipo es: ", n_bits)
 
-# Tamaño de la poblacion
-n_pob = 50
-# Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 0
-# Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
-func = 1
-
 print("Se esta aplicando el AG a la Funcion", func)
 print("La funcion se esta", "maximizando." if tipo_optim == 1 else "minimizando." if 
       tipo_optim == 0 else "Introduzca una operacion correcta")
-
-# Tasa de crossover segun Holland
-r_cross = 0.8
-# Tasa de mutacion segun Holland
-r_mut = 0.1
-# Elitismo (1) o sin elitismo (0)
-elit = 1
-#Parametros de la renormalizacion lineal
-renorm = 1 #Para escoger si se hace la renormalizacion 
-dec_renorm, max_fit = 1, 50
-#GAP GENERACIONAL. Activado (1), Desactivado (0)
-gap_gen = 1
-#Porcentaje de la poblacion que se cambia
-p_gap = 10
-#Sin duplicado (1), permite la existencia de duplicados (0)
-dupli =1
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
@@ -204,6 +203,10 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
             while random_index in peores_indiv:
                 random_index = randint(0, len(pob)-1)
             pob[random_index] = mejor_binario
+
+    #Se puede hacer seleccion y luego de hacerla y tener los 100 individuos, los ordenor de mejor a peor y 
+    #sustituyo el peor por el mejor de la generacion anterior.
+    
 
     #Mejor individuo de todas las generaciones
     mejor_fitness = np.amax(mejores)
