@@ -58,7 +58,7 @@ def orden_poblacion(fitness, pob):
 
     #Se arregla el arreglo de indices de mayor a menor con base en el arreglo1
     indices.sort(key=lambda i: fitness[i], reverse=True)
-
+    
     #Se usa el arreglo de indices arreglados para sortear los 2 originales
     sorted_fitness = [fitness[i] for i in indices]
     sorted_pob = [pob[i] for i in indices]

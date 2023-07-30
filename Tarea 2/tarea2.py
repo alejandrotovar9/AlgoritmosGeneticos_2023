@@ -17,14 +17,16 @@ import math
  
 #Definir rango para entrada
 #dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
-#dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
-dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
+dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
+#dom = [[-5.0,5.0],[-5.0,5.0]]
+
+#dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
 #dom = [-100.0,100.0],[-100.0,100.0] #F4 Minimizar
 
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
 tipo_optim = 1
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
-func = 3
+func = 2
 # Tamaño de la poblacion
 n_pob = 50
 # Definir el numero de generaciones
@@ -32,21 +34,21 @@ n_iter = 100
 # Tasa de crossover segun Holland
 r_cross = 0.9
 # Tasa de mutacion segun Holland
-r_mut = 0.01
+r_mut = 0.1
 # Elitismo (1) o sin elitismo (0)
 elit = 1
 #Parametros de la renormalizacion lineal
 renorm = 1 #Para escoger si se hace la renormalizacion 
 dec_renorm, max_fit = 1, 100
 #GAP GENERACIONAL. Activado (1), Desactivado (0)
-gap_gen = 0
+gap_gen = 1
 #Porcentaje de la poblacion que se cambia
 p_gap = 10
 #Sin duplicado (1), permite la existencia de duplicados (0)
-dupli = 0
+dupli = 1
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-3 #Numero de cifras decimales/ precision
+pre = 1e-5 #Numero de cifras decimales/ precision
 
 print("Numero de variables:", len(dom))
 
@@ -72,6 +74,8 @@ print("El numero de bits del genotipo es: ", n_bits)
 print("Se esta aplicando el AG a la Funcion", func)
 print("La funcion se esta", "maximizando." if tipo_optim == 1 else "minimizando." if 
       tipo_optim == 0 else "Introduzca una operacion correcta")
+if gap_gen == 1:
+    print("Se cambiaran esta cantidad de individuos por el gap generacional: ", int((n_pob)*(p_gap/100)))
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
@@ -125,8 +129,8 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
+        #Arreglo la poblacion de mejor a peor para varios usos
         mejor_a_peor_arr = orden_poblacion(fitness, pob)
-        print(mejor_a_peor_arr)
 
         if renorm == 1:
             #Se genera vector de fitness y poblacion renormalizado
@@ -179,33 +183,32 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         prom.append(promedio)
         ultimo_mejor = best_pair
 
+        #print("Peores individuos:", mejor_a_peor_arr[-10:])
         #-----------------------------------------Gap Generacional----------------------------------------
         #Se sustituyen solo un porcentaje de la poblacion generada
         if gap_gen==1:
-            for k in range(len(pob) - 1, len(pob) - p_gap - 1, -1): #Recorre desde el ultimo individuo
+            for k in range(len(pob) - 1, len(pob) - int((len(pob)+1)*(p_gap/100)) - 1, -1): #Recorre desde el ultimo individuo
+
+                #Genero numero aletoria que sera la posicion en la cual escogere al hijo nuevo
                 num_rand = randint(0, len(pob)- 1)
                 #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
-                #Es decir, sustituyo a los peores individuos de la original (hijos) para la nueva pob
+
+                #-----------------------------SIN DUPLICADOS----------------------------------------
                 if dupli == 1:
                     while hijos[num_rand] in pob:
+                        #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
                         num_rand = randint(0, len(pob)- 1)
-                pob[indices_norm[k]] = hijos[num_rand] #Creacion de la nueva poblacion
-                #peores_indiv.append(indices_norm[k]) #Guardo la ubicacion de los que sustitui en la nueva poblacion
 
+                #Sustituyo a los peores individuos de la original para nuevos hijos generados 
+                pob[mejor_a_peor_arr[k]] = hijos[num_rand] #Creacion de la nueva poblacion
         else:
             # Se actualiza la poblacion actual
             pob = hijos
-        
-        #Actualizacion por elitismo, mantengo el mejor individuo en la posicion en la que estaba
+
+        #Actualizacion por elitismo, mantengo al mejor individuo de la poblacion anterior
         if elit == 1:
-            #Guardo los peores individuos en un vector con la poblacion ordenada (mismo principio de renormalizacion)
-            # fitness_norm, pob_norm, indices_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
-            # peores_indiv= []
-            # fitness_peores = []
-            # for k in range(len(pob) - 1, len(pob) - 11, -1): #Recorro desde el ultimo y escojo los peores 10
-            #     peores_indiv.append(indices_norm[k])
-            
-            pob[mejor_a_peor_arr[-1]] = mejor_binario #sustituyo el peor individuo por el mejor de la generacion anterior
+            num_ale = randint(0, len(pob)- 1)
+            pob[num_ale] = mejor_binario #sustituyo un individuo de la nueva por el mejor de la generacion anterior
         else:
             continue
 
@@ -213,8 +216,6 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         #Es mejor hacer append al vector habiendo generado solo 99 individuos, o en su defecto,
         #sacar uno que este en una posicion aleatoria entre 0 y 100
 
-    #Se puede hacer seleccion y luego de hacerla y tener los 100 individuos, los ordenor de mejor a peor y 
-    #sustituyo el peor por el mejor de la generacion anterior.
     
 
     #Mejor individuo de todas las generaciones
