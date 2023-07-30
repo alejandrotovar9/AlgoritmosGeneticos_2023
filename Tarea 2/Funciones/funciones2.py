@@ -50,6 +50,23 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         decodificado.append(valor)
     return decodificado
 
+#-----------------------PEORES INDIVIDUOS------------------------------
+
+def orden_poblacion(fitness, pob):
+    # Se crea arreglo de index
+    indices = list(range(len(fitness)))
+
+    #Se arregla el arreglo de indices de mayor a menor con base en el arreglo1
+    indices.sort(key=lambda i: fitness[i], reverse=True)
+
+    #Se usa el arreglo de indices arreglados para sortear los 2 originales
+    sorted_fitness = [fitness[i] for i in indices]
+    sorted_pob = [pob[i] for i in indices]
+
+    #Devuelvo el valor de los indices ordenados, que es el orden de los mejores individuos de mayor a menor
+
+    return indices
+
 #-----------------------RENORMALIZACION LINEAL------------------------------------------
 
 def renorm_lineal(fitness, pob, dec, max_fit):
@@ -173,3 +190,7 @@ def mutacion(bitstring, r_mut):
             # Se cambia el valor de un bit en la posicion escogida en caso de que se cumpla condicion de mutacion
             # Si era 0 cambia a 1 y 1 cambia a 0, es el negado
             bitstring[i] = 1 - bitstring[i]
+
+#----------------------------------OTROS OPERADORES DE MUTACION Y CRUCE------------------------------------
+
+

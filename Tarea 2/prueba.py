@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy import sin, cos, pi
 
 def plot_function(F, points=None):
     # Define the domain of the function
@@ -35,10 +36,7 @@ def plot_function(F, points=None):
     plt.show()
 
 def F1(x):
-    return x[0]**2 + 2*(x[1]**2) - 0.3*np.cos(3*np.pi*x[0]) - 0.4*np.cos(4*np.pi*x[1]) + 0.7
-
-def F2(x):
-    return 0.5 - (np.sin(np.sqrt(x[0]**2+x[1]**2))**2 - 0.5)/(1 + 0.001*(x[0]**2 + x[1]**2))**2
+    21.5 + x[0]*sin(4*pi*x[0]) + x[1]*sin(20*pi*x[1])
 
 # Define the array of points to scatter on the mesh
 points = [[0.5, 0.5], [-0.5, -0.5], [-0.5, 0.5], [0.5, -0.5]]
@@ -46,5 +44,3 @@ points = [[0.5, 0.5], [-0.5, -0.5], [-0.5, 0.5], [0.5, -0.5]]
 # Call the function to create the plot for F1 with scattered points
 plot_function(F1, points)
 
-# Call the function to create the plot for F2 with scattered points
-plot_function(F2, points)

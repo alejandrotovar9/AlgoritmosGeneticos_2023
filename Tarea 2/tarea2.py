@@ -3,15 +3,6 @@
 # Profa. Tamara Perez
 # E.I.E - UCV
 
-# PARAMETROS:
-# a) la escogencia de la función a optimizar
-# b) la selección de la tarea a realizar (maximizar o minimizar)
-# c) el tamaño de la población
-# d) la cantidad de generaciones
-# e) probabilidades de cruce y mutación
-# f) número de bits del cromosoma (incluyendo número de bits asignados a cada variable, permitiendo que sean diferentes)
-# g) número de corridas.
-
 # Importando librerias necesarias
 
 from Funciones.funciones2 import *  # Importando archivo que contiene las funciones
@@ -25,15 +16,15 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
+#dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
 #dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
-#dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
+dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
 #dom = [-100.0,100.0],[-100.0,100.0] #F4 Minimizar
 
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 0
+tipo_optim = 1
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
-func = 1
+func = 3
 # Tamaño de la poblacion
 n_pob = 50
 # Definir el numero de generaciones
@@ -48,14 +39,14 @@ elit = 1
 renorm = 1 #Para escoger si se hace la renormalizacion 
 dec_renorm, max_fit = 1, 100
 #GAP GENERACIONAL. Activado (1), Desactivado (0)
-gap_gen = 1
+gap_gen = 0
 #Porcentaje de la poblacion que se cambia
 p_gap = 10
 #Sin duplicado (1), permite la existencia de duplicados (0)
-dupli =1
+dupli = 0
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-4 #Numero de cifras decimales/ precision
+pre = 1e-3 #Numero de cifras decimales/ precision
 
 print("Numero de variables:", len(dom))
 
@@ -76,8 +67,8 @@ else:
     n_bits_2 = n_bits_array[1]
     n_bits_3 = 0
 n_bits = sum(n_bits_array)
-print("El numero de bits del genotipo es: ", n_bits)
 
+print("El numero de bits del genotipo es: ", n_bits)
 print("Se esta aplicando el AG a la Funcion", func)
 print("La funcion se esta", "maximizando." if tipo_optim == 1 else "minimizando." if 
       tipo_optim == 0 else "Introduzca una operacion correcta")
@@ -93,6 +84,7 @@ def F2(x):
 
 def F3(x):
     return 21.5 + x[0]*sin(4*pi*x[0]) + x[1]*sin(20*pi*x[1])
+
 # --------------------------Algoritmo Genetico----------------------------------
 
 mejores = []
@@ -118,35 +110,43 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         if func == 1 and tipo_optim == 1:
             fitness = [f1(d) for d in decoded]
         elif func == 1 and tipo_optim == 0:
-            fitness = [1/f1(d) for d in decoded]
+            fitness = [1/(1+f1(d)) for d in decoded]
         #Funcion 2
         elif func == 2 and tipo_optim == 1:
             fitness = [f2(d) for d in decoded]
         elif func == 2 and tipo_optim == 0:
-            fitness = [1/f2(d) for d in decoded]
+            fitness = [1/(1+f2(d)) for d in decoded]
         #Funcion 3
         elif func == 3 and tipo_optim == 1:
             fitness = [f3(d) for d in decoded]
         elif func == 3 and tipo_optim == 0:
-            fitness = [1/f3(d) for d in decoded]
+            fitness = [1/(1+f3(d)) for d in decoded]
 
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
+        mejor_a_peor_arr = orden_poblacion(fitness, pob)
+        print(mejor_a_peor_arr)
+
         if renorm == 1:
+            #Se genera vector de fitness y poblacion renormalizado
             fitness_norm, pob_norm, indices_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
-                        
+        
+        #Se guardan mejores valores de población actual
         best_index, best_eval = np.argmax(fitness), np.amax(fitness)
         best_pair = decoded[best_index]
         promedio = np.mean(fitness)
         mejor_binario = pob[best_index]
+
+        #print("El mejor individuo es: ", mejor_binario)
+        #print("El peor individuo es: ", peores_indiv[-1])
 
         # Se hace la seleccion de los padres recorriendo toda la poblacion
         #------------------------Seleccion por Torneo----------------------------------
         #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
         
-        #------------------------Seleccion por Ruleta----------------------------------
+        #------------------------Seleccion----------------------------------
         if renorm == 1:
             padres_selec = ruleta(pob_norm,fitness_norm)
             #padres_selec = uni_estocastica(pob_norm,fitness_norm)
@@ -160,6 +160,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         # Se crea la siguiente generacion
         hijos = list()
 
+        #----------------------CRUCE Y MUTACION-------------------------------------------
         for i in range(0, n_pob, 2):  # Pasos de dos
             # Se arreglan los padres seleccionados en pares
             p1, p2 = padres_selec[i], padres_selec[i+1]
@@ -170,39 +171,47 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
                 # Se guarda para la siguiente generacion
                 hijos.append(c)
 
+        #Se guardan valores necesarios para las graficas
         generaciones.append(gen)
         indices.append(best_index)
         mejores.append(best_eval)
         mejor_par.append(best_pair)
         prom.append(promedio)
         ultimo_mejor = best_pair
-        
-        peores_indiv= []
 
-        #Gap Generacional si se renormaliza
-        if gap_gen==1 and renorm==1:
+        #-----------------------------------------Gap Generacional----------------------------------------
+        #Se sustituyen solo un porcentaje de la poblacion generada
+        if gap_gen==1:
             for k in range(len(pob) - 1, len(pob) - p_gap - 1, -1): #Recorre desde el ultimo individuo
                 num_rand = randint(0, len(pob)- 1)
                 #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
+                #Es decir, sustituyo a los peores individuos de la original (hijos) para la nueva pob
                 if dupli == 1:
                     while hijos[num_rand] in pob:
                         num_rand = randint(0, len(pob)- 1)
-                    pob[indices_norm[k]] = hijos[num_rand]
-                peores_indiv.append(indices_norm[k]) #Guardo la ubicacion de los que sustitui en la nueva poblacion
+                pob[indices_norm[k]] = hijos[num_rand] #Creacion de la nueva poblacion
+                #peores_indiv.append(indices_norm[k]) #Guardo la ubicacion de los que sustitui en la nueva poblacion
 
         else:
             # Se actualiza la poblacion actual
             pob = hijos
-
+        
         #Actualizacion por elitismo, mantengo el mejor individuo en la posicion en la que estaba
+        if elit == 1:
+            #Guardo los peores individuos en un vector con la poblacion ordenada (mismo principio de renormalizacion)
+            # fitness_norm, pob_norm, indices_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
+            # peores_indiv= []
+            # fitness_peores = []
+            # for k in range(len(pob) - 1, len(pob) - 11, -1): #Recorro desde el ultimo y escojo los peores 10
+            #     peores_indiv.append(indices_norm[k])
+            
+            pob[mejor_a_peor_arr[-1]] = mejor_binario #sustituyo el peor individuo por el mejor de la generacion anterior
+        else:
+            continue
+
+        
         #Es mejor hacer append al vector habiendo generado solo 99 individuos, o en su defecto,
         #sacar uno que este en una posicion aleatoria entre 0 y 100
-        
-        if elit == 1:
-            random_index = randint(0, len(pob)-1) #Se genera la posicion aleatoria que sustuire por el mejor individuo
-            while random_index in peores_indiv:
-                random_index = randint(0, len(pob)-1)
-            pob[random_index] = mejor_binario
 
     #Se puede hacer seleccion y luego de hacerla y tener los 100 individuos, los ordenor de mejor a peor y 
     #sustituyo el peor por el mejor de la generacion anterior.
