@@ -38,8 +38,6 @@ hijo_unico = []
 print(range(len(p1)))
 
 # FLAT
-
-
 def flat(p1, p2):
       for k in range(len(p1)):
             h = random.uniform(p1[k], p2[k])
@@ -54,8 +52,6 @@ print("Hijo producto del flat:", hijo_flat)
 
 # Cruce Aritmetico
 K = 0.1  # Factor Lambda
-
-
 def cruce_arit(p1, p2):
     # Se inicializan vectores vacios
     hijo1 = []
@@ -79,8 +75,6 @@ print("Hijo 1 por cruce aritmetico: ", hijo_arit1, "  |   Hijo 2 por cruce aritm
 
 # Cruce BLX-alfa
 alfa = 0.1
-
-
 def blx_alfa(p1, p2):
 
     hijo = []
