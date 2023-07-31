@@ -45,7 +45,7 @@ gap_gen = 1
 #Porcentaje de la poblacion que se cambia
 p_gap = 10
 #Sin duplicado (1), permite la existencia de duplicados (0)
-dupli = 1
+dupli = 0
 
 #Para calcular el numero de bits necesarios dada la precision
 pre = 1e-5 #Numero de cifras decimales/ precision
@@ -198,12 +198,22 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
                     while hijos[num_rand] in pob:
                         #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
                         num_rand = randint(0, len(pob)- 1)
-
                 #Sustituyo a los peores individuos de la original para nuevos hijos generados 
                 pob[mejor_a_peor_arr[k]] = hijos[num_rand] #Creacion de la nueva poblacion
         else:
             # Se actualiza la poblacion actual
             pob = hijos
+
+        if dupli == 1 and gap_gen == 0:
+            for k in range(len(pob)-1):
+                if hijos[k] in pob:
+                    #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
+                    num_rand = randint(0, len(pob)- 1)
+                    pob[k] = hijos[num_rand]
+                #Si el valor del hijo es distinto, actualizo poblacion
+                else:
+                    # Se actualiza la poblacion actual
+                    pob[k] = hijos[k]
 
         #Actualizacion por elitismo, mantengo al mejor individuo de la poblacion anterior
         if elit == 1:
