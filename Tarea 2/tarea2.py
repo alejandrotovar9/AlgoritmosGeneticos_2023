@@ -27,9 +27,9 @@ tipo_optim = 0
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
 func = 1
 # Tamaño de la poblacion
-n_pob = 10
+n_pob = 50
 # Definir el numero de generaciones
-n_iter = 1
+n_iter = 100
 # Tasa de crossover segun Holland
 r_cross = 0.9
 # Tasa de mutacion segun Holland
@@ -47,7 +47,7 @@ p_gap = 10
 dupli = 0
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-2 #Numero de cifras decimales/ precision
+pre = 1e-4 #Numero de cifras decimales/ precision
 
 print("Numero de variables:", len(dom))
 
@@ -126,6 +126,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         elif func == 3 and tipo_optim == 0:
             fitness = [1/(1+f3(d)) for d in decoded]
 
+        fitness = np.around(fitness,8)
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
@@ -234,38 +235,9 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
     mejor_individuo = mejor_par[np.argmax(mejores)]
     print("El mejor individuo de la ultima generacion esta ubicado en: ", ultimo_mejor)
 
-    return [mejor_individuo, mejor_fitness]
+    return [mejor_individuo, mejor_fitness, mejores, prom, generaciones]
 
 #----------------FIN DEL AG---------------------------
-
-corridas = 5
-mejores_corridas = []
-fitness_corridas = []
-
-for k in range(corridas):
-
-    best, puntuacion = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
-                                n_pob, r_cross, r_mut, tipo_optim, func, elit)
-    #Mejor individuo encontrado en todas las corridas y todas las generaciones
-    mejores_corridas.append(best)
-    fitness_corridas.append(puntuacion)
- 
-    print("El mejor resultado obtenido en la corrida ", k,  " es el siguiente:", best)
-
-#myFile = open('sample.txt', 'r+')
-print("The array is:", mejores_corridas)
-np.savetxt('sample.txt', mejores_corridas)
-#myFile.close()
-
-# Save the array in a CSV file
-with open("prueba.csv", "w") as f:
-    writer = csv.writer(f, delimiter=",")
-    writer.writerow(mejores_corridas)
-
-print('Listo!')
-
-print(mejores_corridas)
-print(fitness_corridas)
 
 #Escoger la funcion a graficar
 
@@ -276,10 +248,68 @@ elif func == 2:
 elif func == 3:
     plot_func = F3
 
-#figuras2(generaciones, mejores, prom)
+#-----------------CORRIDAS---------------
+
+corridas = 20
+mejores_ind_corridas = []
+fitness_corridas = []
+
+vector_max_fitness_corridas = []
+vector_de_prom_corridas = []
+
+vector_promedio_max_fitness_corridas = []
+vector_promedio_prom_corridas = []
+
+for k in range(corridas):
+
+    print("Corrida:", k+1)
+
+    best, puntuacion, vector_mejores_fitness, vector_prom, genera = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
+                                n_pob, r_cross, r_mut, tipo_optim, func, elit)
+    #BORRO LOS MEJORES DE LA ANTERIOR
+    mejores = []
+    prom = []
+    generaciones = []
+    #Mejor individuo encontrado en todas las corridas y todas las generaciones
+    np.array(vector_mejores_fitness)
+    mejores_ind_corridas.append(best)
+    fitness_corridas.append(puntuacion)
+    vector_max_fitness_corridas.append(vector_mejores_fitness)
+    vector_de_prom_corridas.append(vector_prom)
+
+#Se generan vectores promedio para graficas dado el numero de corridas
+vector_promedio_max_fitness_corridas = promedio_corridas(vector_max_fitness_corridas, corridas)
+vector_promedio_prom_corridas = promedio_corridas(vector_de_prom_corridas, corridas)
+
+mejor_fitness_total = np.amax(fitness_corridas)
+mejor_individuo_total = mejores_ind_corridas[np.argmax(fitness_corridas)]
+
+print("El mejor individuo de todas las corridas tiene un fitness de: ", mejor_fitness_total)
+print("El mejor individuo de todas las corridas esta ubicado en la posicion: ", mejor_individuo_total)
+
+
+print("Las longitudes son:")
+print("V1", len(vector_promedio_max_fitness_corridas))
+print("V2", len(vector_promedio_prom_corridas))
+
+print(vector_promedio_max_fitness_corridas)
+print(vector_promedio_prom_corridas)
+
+figuras2(genera, vector_promedio_max_fitness_corridas, vector_promedio_prom_corridas)
+
+#myFile = open('sample.txt', 'r+')
+np.savetxt('sample.txt', mejores_ind_corridas)
+#myFile.close()
+
+# Save the array in a CSV file
+with open("prueba.csv", "w") as f:
+    writer = csv.writer(f, delimiter=",")
+    writer.writerow(mejores_ind_corridas)
+
+print('Listo!')
 
 #Funciones para graficar
 # figuras1(mejor_par, n_iter, plot_func)
-# figuras2(generaciones, mejores, prom)
+#figuras2(generaciones, mejores, prom)
 # figuras3(plot_func, mejor_par, dom)
 
