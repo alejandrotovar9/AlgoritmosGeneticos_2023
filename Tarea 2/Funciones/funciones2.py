@@ -46,11 +46,33 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         # Se escala el integer a un valor dentro del rango deseado
         valor = dom[i][0] + (integer/(valor_max-1)) * (dom[i][1] - dom[i][0])
         
-        rounded_number = round(valor, 5)
+        rounded_number = round(valor, 8)
 
         # Guardo en la lista inicial
         decodificado.append(rounded_number)
     return decodificado
+
+#-----------------------PROMEDIO-----------------------
+def promedio_corridas(arrays, corridas):
+    """
+    Get the average of several arrays for each element.
+
+    Args:
+        arrays: A list of arrays.
+
+    Returns:
+        A list of the averages of the arrays.
+    """
+
+    c = np.zeros(len(arrays[0]))
+    #recorro todo el vector posicion por posicion
+    for i in range(len(arrays[0])):
+        average = 0
+        for array in arrays:
+            average += array[i]
+        average = average / len(arrays)
+        c[i] = average
+    return c
 
 #-----------------------PEORES INDIVIDUOS------------------------------
 
