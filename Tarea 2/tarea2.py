@@ -19,7 +19,6 @@ import csv
 #Definir rango para entrada
 dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
 #dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
-#dom = [[-5.0,5.0],[-5.0,5.0]]
 #dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
 
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
@@ -31,9 +30,9 @@ n_pob = 50
 # Definir el numero de generaciones
 n_iter = 100
 # Tasa de crossover segun Holland
-r_cross = 0.9
+r_cross = 0.8
 # Tasa de mutacion segun Holland
-r_mut = 0.1
+r_mut = 0.02
 # Elitismo (1) o sin elitismo (0)
 elit = 1
 #Parametros de la renormalizacion lineal
@@ -42,9 +41,9 @@ dec_renorm, max_fit = 1, 100
 #GAP GENERACIONAL. Activado (1), Desactivado (0)
 gap_gen = 1
 #Porcentaje de la poblacion que se cambia
-p_gap = 10
+p_gap = 2
 #Sin duplicado (1), permite la existencia de duplicados (0)
-dupli = 0
+dupli = 1
 
 #Para calcular el numero de bits necesarios dada la precision
 pre = 1e-4 #Numero de cifras decimales/ precision
@@ -126,7 +125,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         elif func == 3 and tipo_optim == 0:
             fitness = [1/(1+f3(d)) for d in decoded]
 
-        fitness = np.around(fitness,8)
+        fitness = np.around(fitness,15)
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
@@ -233,7 +232,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
     print("El mejor fitness es: ", mejor_fitness) 
     print("El mejor individuo esta ubicado en la posicion: ", np.argmax(mejores))
     mejor_individuo = mejor_par[np.argmax(mejores)]
-    print("El mejor individuo de la ultima generacion esta ubicado en: ", ultimo_mejor)
+    print("El mejor individuo esta en: ", mejor_individuo)
 
     return [mejor_individuo, mejor_fitness, mejores, prom, generaciones]
 
@@ -250,7 +249,7 @@ elif func == 3:
 
 #-----------------CORRIDAS---------------
 
-corridas = 20
+corridas = 1
 mejores_ind_corridas = []
 fitness_corridas = []
 
@@ -292,19 +291,8 @@ print("Las longitudes son:")
 print("V1", len(vector_promedio_max_fitness_corridas))
 print("V2", len(vector_promedio_prom_corridas))
 
-print(vector_promedio_max_fitness_corridas)
-print(vector_promedio_prom_corridas)
 
 figuras2(genera, vector_promedio_max_fitness_corridas, vector_promedio_prom_corridas)
-
-#myFile = open('sample.txt', 'r+')
-np.savetxt('sample.txt', mejores_ind_corridas)
-#myFile.close()
-
-# Save the array in a CSV file
-with open("prueba.csv", "w") as f:
-    writer = csv.writer(f, delimiter=",")
-    writer.writerow(mejores_ind_corridas)
 
 print('Listo!')
 
