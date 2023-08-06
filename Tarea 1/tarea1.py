@@ -24,16 +24,16 @@ from numpy import sin, cos, pi
 import math
  
 #Definir rango para entrada
-dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]]
-#dom = [[-8.0, 8.0], [-8.0, 8.0]]
+#dom = [[-5.0, 10.0], [-3.0, 9.0], [-1.0, 2.5]] #Funcion 1
+dom = [[-8.0, 8.0], [-8.0, 8.0]] #Funcion 0
 print("Numero de variables:", len(dom))
 
 # Definir el numero de generaciones
-n_iter = 100
+n_iter = 50
 # Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-3 #Numero de cifras decimales/ precision
+pre = 1e-6 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
@@ -59,15 +59,15 @@ print("El numero de bits del genotipo es: ", n_bits)
 n_pob = 50
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
 tipo_optim = 0
-# Variable que controla si se quiere optimizar la F1 (1), F2 (2), F3 (3)
-func = 1
+# Variable que controla si se quiere optimizar la F1 (0), F2 (1)
+func = 0
 # Tasa de crossover segun Holland
 r_cross = 0.8
 # Tasa de mutacion segun Holland
 r_mut = 0.1
-#Parametros de la renormalizacion lineal
-renorm = 0 #Para escoger si se hace la renormalizacion 
-dec_renorm, max_fit = 1, 50
+# #Parametros de la renormalizacion lineal
+# renorm = 0 #Para escoger si se hace la renormalizacion 
+# dec_renorm, max_fit = 1, 50
 
 
 # Funciones objetivo, las cuales se quieren maximizar o minimizar
@@ -116,8 +116,8 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         # Se asigna una puntuacion a cada candidato
         # Se busca una solucion mejor entre la poblacion
 
-        if renorm == 1:
-            fitness_norm, pob_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
+        # if renorm == 1:
+        #     fitness_norm, pob_norm = renorm_lineal(fitness, pob, dec_renorm, max_fit)
 
         #Buscando el mejor individuo en la generacion actual
         #Necesito el maximo de la generacion actual y el index para ver a cual par pertenece
@@ -136,10 +136,11 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         #               for _ in range(n_pob)]
         
         #------------------------Seleccion por Ruleta----------------------------------
-        if renorm == 1:
-            padres_selec = ruleta(pob_norm,fitness_norm)
-        else:
-            padres_selec = ruleta(pob,fitness)
+        padres_selec = ruleta(pob,fitness)
+        # if renorm == 1:
+        #     padres_selec = ruleta(pob_norm,fitness_norm)
+        # else:
+        #     padres_selec = ruleta(pob,fitness)
 
 
         #padres_selec = uni_estocastica(pob,fitness)
@@ -164,7 +165,7 @@ def alg_gen(f1, f2, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func
         prom.append(promedio)
         ultimo_mejor = best_pair
 
-        # Se actualiza la poblacion actual
+        # Se actualiza la poblacion actual SIN ELITISMO
         pob = hijos
 
     #Mejor individuo de todas las generaciones

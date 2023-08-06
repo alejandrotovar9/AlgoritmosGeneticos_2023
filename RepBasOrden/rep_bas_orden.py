@@ -9,6 +9,7 @@ ma = [0, 1, 1, 0, 1, 1, 0, 0]
 
 #CRUC UNIFORME
 def cruce_uniforme(p1, p2, ma):
+    #Para generar al hijo 1
     h1 = []
     hijo1 = []
     nuevop2 = []
@@ -18,8 +19,10 @@ def cruce_uniforme(p1, p2, ma):
         else:
             h1.append('a')
         if p2[k] not in h1:
+            #Busco si esta ubicado en el hijo 1
             nuevop2.append(p2[k])
 
+    #Intercambio las "a" por los valores del otro padre permutados
     for valor in h1:
         if valor == 'a':
             hijo1.append(nuevop2[0])
@@ -27,6 +30,7 @@ def cruce_uniforme(p1, p2, ma):
         else:
             hijo1.append(valor)
 
+    #Para generar al hijo 2
     h2 = []
     hijo2 = []
     nuevop1 = []
@@ -36,6 +40,7 @@ def cruce_uniforme(p1, p2, ma):
         else:
             h2.append('a')
         if p1[k] not in h2:
+            #Busco si esta ubicado en el hijo2
             nuevop1.append(p1[k])
 
     for valor in h2:
@@ -48,8 +53,11 @@ def cruce_uniforme(p1, p2, ma):
     return hijo1, hijo2
 
 h1, h2 = cruce_uniforme(p1,p2,ma)
-print("El hijo 1 es: ", h1)
-print("El hijo 2 es: ", h2)
+print("El padre 1 es: ", p1)
+print("El padre 2 es: ", p2)
+
+print("El hijo 1 producto del cruce uniforme es: ", h1)
+print("El hijo 2 producto del cruce uniforme es: ", h2)
 
 print('   ')
 

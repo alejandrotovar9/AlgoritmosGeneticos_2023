@@ -37,20 +37,21 @@ hijo_unico = []
 
 print(range(len(p1)))
 
-# FLAT
+#-----------------------------------FLAT---------------------------------------
 def flat(p1, p2):
       for k in range(len(p1)):
             h = random.uniform(p1[k], p2[k])
-            truncado = f"{h:.3f}"
-            ht = float(truncado)
-            hijo_unico.append(ht)
+            truncado = f"{h:.3f}" #Para no mostrar todos los decimales
+            ht = float(truncado) #Convierto a float
+            hijo_unico.append(ht) #guardo en el vector hijo
       return hijo_unico
 
 
 hijo_flat = flat(p1, p2)
 print("Hijo producto del flat:", hijo_flat)
+print("   ")
 
-# Cruce Aritmetico
+#-----------------------------Cruce Aritmetico---------------------------
 K = 0.1  # Factor Lambda
 def cruce_arit(p1, p2):
     # Se inicializan vectores vacios
@@ -72,9 +73,10 @@ def cruce_arit(p1, p2):
 
 hijo_arit1, hijo_arit2 = cruce_arit(p1, p2)
 print("Hijo 1 por cruce aritmetico: ", hijo_arit1, "  |   Hijo 2 por cruce aritmetico: ", hijo_arit2)
+print("   ")
 
 # Cruce BLX-alfa
-alfa = 0.1
+alfa = 0
 def blx_alfa(p1, p2):
 
     hijo = []
@@ -94,6 +96,7 @@ def blx_alfa(p1, p2):
 
 hijo_blx = blx_alfa(p1, p2)
 print("Hijo producto del BLX-alfa:", hijo_blx)
+print("   ")
 
 #Cruce Lineal
 def cruce_lineal(p1, p2):
@@ -121,6 +124,7 @@ def cruce_lineal(p1, p2):
 
 hijo_lineal1, hijo_lineal2, hijo_lineal3 = cruce_lineal(p1, p2)
 print("Hijo 1 lineal: ", hijo_lineal1, "  |   Hijo 2 lineal: ", hijo_lineal2, "  |   Hijo 3 lineal: ", hijo_lineal3)
+print("   ")
 
 #Cruce Linea Extendida
 def cruce_lin_ext(p1, p2):
@@ -136,6 +140,7 @@ def cruce_lin_ext(p1, p2):
 
 hijo_lin_ext = cruce_lin_ext(p1, p2)
 print("Hijo producto de cruce de linea extendida:", hijo_lin_ext)
+print("   ")
 
 #Cruce Heuristico de Wright
 def cruce_wright(p1,p2):
@@ -151,3 +156,4 @@ def cruce_wright(p1,p2):
 
 hijo_wright = cruce_wright(p1, p2)
 print("Hijo producto de cruce heuristico de Wright:", hijo_wright)
+print("   ")

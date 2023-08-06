@@ -14,23 +14,22 @@ import matplotlib.pyplot as plt
 import numpy as np
 from numpy import sin, cos, pi
 import math
+import csv
  
 #Definir rango para entrada
-#dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
-dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
+dom = [[-10.0,10.0],[-10.0,10.0]] #F1 Minimizar
+#dom = [[-100.0,100.0],[-100.0,100.0]] #F2 Maximizar
 #dom = [[-5.0,5.0],[-5.0,5.0]]
-
 #dom = [[-3,12.1],[4.1,5.8]] #F3 Maximizar
-#dom = [-100.0,100.0],[-100.0,100.0] #F4 Minimizar
 
 # Variable que controla si se quiere maximizar (1) o minimizar (0) la funcion
-tipo_optim = 1
+tipo_optim = 0
 # Variable que controla si se quiere optimizar la F1 (1), F2 (2) o F3(3)
-func = 2
+func = 1
 # Tamaño de la poblacion
-n_pob = 50
+n_pob = 10
 # Definir el numero de generaciones
-n_iter = 100
+n_iter = 1
 # Tasa de crossover segun Holland
 r_cross = 0.9
 # Tasa de mutacion segun Holland
@@ -48,7 +47,7 @@ p_gap = 10
 dupli = 0
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-5 #Numero de cifras decimales/ precision
+pre = 1e-2 #Numero de cifras decimales/ precision
 
 print("Numero de variables:", len(dom))
 
@@ -96,6 +95,7 @@ generaciones = []
 indices = []
 mejor_par = []
 prom = []
+pob_final =[]
 
 def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, func, elit):
     # Se genera poblacion inicial de bit-strings ALEATORIOS
@@ -139,7 +139,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         #Se guardan mejores valores de población actual
         best_index, best_eval = np.argmax(fitness), np.amax(fitness)
         best_pair = decoded[best_index]
-        promedio = np.mean(fitness)
+        promedio = np.average(fitness)
         mejor_binario = pob[best_index]
 
         #print("El mejor individuo es: ", mejor_binario)
@@ -152,15 +152,16 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         
         #------------------------Seleccion----------------------------------
         if renorm == 1:
-            padres_selec = ruleta(pob_norm,fitness_norm)
-            #padres_selec = uni_estocastica(pob_norm,fitness_norm)
+            #padres_selec = ruleta(pob_norm,fitness_norm)
+            padres_selec = uni_estocastica(pob_norm,fitness_norm)
             #padres_selec = [selection(pob_norm, fitness_norm, tipo_optim) for _ in range(n_pob)]
         else:
-            padres_selec = ruleta(pob, fitness)
-            #padres_selec = uni_estocastica(pob,fitness)
+            #padres_selec = ruleta(pob, fitness)
+            padres_selec = uni_estocastica(pob,fitness)
             #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
-        
+    
+
         # Se crea la siguiente generacion
         hijos = list()
 
@@ -189,7 +190,7 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         if gap_gen==1:
             for k in range(len(pob) - 1, len(pob) - int((len(pob)+1)*(p_gap/100)) - 1, -1): #Recorre desde el ultimo individuo
 
-                #Genero numero aletoria que sera la posicion en la cual escogere al hijo nuevo
+                #Genero numero aleatoria que sera la posicion en la cual escogere al hijo nuevo
                 num_rand = randint(0, len(pob)- 1)
                 #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
 
@@ -204,29 +205,27 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
             # Se actualiza la poblacion actual
             pob = hijos
 
+        #Duplicados en caso de que este desactivada la sustitucion parcial.
         if dupli == 1 and gap_gen == 0:
             for k in range(len(pob)-1):
                 if hijos[k] in pob:
-                    #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
-                    num_rand = randint(0, len(pob)- 1)
+                    while hijos[k] in pob:
+                        #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
+                        num_rand = randint(0, len(pob)- 1)
                     pob[k] = hijos[num_rand]
                 #Si el valor del hijo es distinto, actualizo poblacion
                 else:
                     # Se actualiza la poblacion actual
                     pob[k] = hijos[k]
 
+        #El duplicado lo imprimo despues de mutacion y cruce
+            
         #Actualizacion por elitismo, mantengo al mejor individuo de la poblacion anterior
         if elit == 1:
             num_ale = randint(0, len(pob)- 1)
             pob[num_ale] = mejor_binario #sustituyo un individuo de la nueva por el mejor de la generacion anterior
         else:
             continue
-
-        
-        #Es mejor hacer append al vector habiendo generado solo 99 individuos, o en su defecto,
-        #sacar uno que este en una posicion aleatoria entre 0 y 100
-
-    
 
     #Mejor individuo de todas las generaciones
     mejor_fitness = np.amax(mejores)
@@ -237,10 +236,36 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
 
     return [mejor_individuo, mejor_fitness]
 
-best, puntuacion = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
-                            n_pob, r_cross, r_mut, tipo_optim, func, elit)
+#----------------FIN DEL AG---------------------------
+
+corridas = 5
+mejores_corridas = []
+fitness_corridas = []
+
+for k in range(corridas):
+
+    best, puntuacion = alg_gen(F1, F2, F3, dom, n_bits, n_iter,
+                                n_pob, r_cross, r_mut, tipo_optim, func, elit)
+    #Mejor individuo encontrado en todas las corridas y todas las generaciones
+    mejores_corridas.append(best)
+    fitness_corridas.append(puntuacion)
+ 
+    print("El mejor resultado obtenido en la corrida ", k,  " es el siguiente:", best)
+
+#myFile = open('sample.txt', 'r+')
+print("The array is:", mejores_corridas)
+np.savetxt('sample.txt', mejores_corridas)
+#myFile.close()
+
+# Save the array in a CSV file
+with open("prueba.csv", "w") as f:
+    writer = csv.writer(f, delimiter=",")
+    writer.writerow(mejores_corridas)
+
 print('Listo!')
-print("El mejor resultado obtenido es el siguiente:", best)
+
+print(mejores_corridas)
+print(fitness_corridas)
 
 #Escoger la funcion a graficar
 
@@ -251,8 +276,10 @@ elif func == 2:
 elif func == 3:
     plot_func = F3
 
+#figuras2(generaciones, mejores, prom)
+
 #Funciones para graficar
-figuras1(mejor_par, n_iter, plot_func)
-figuras2(generaciones, mejores, prom)
-figuras3(plot_func, mejor_par, dom)
+# figuras1(mejor_par, n_iter, plot_func)
+# figuras2(generaciones, mejores, prom)
+# figuras3(plot_func, mejor_par, dom)
 

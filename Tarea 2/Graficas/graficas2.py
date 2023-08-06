@@ -3,7 +3,7 @@ from numpy.random import randint
 from numpy.random import rand
 import matplotlib.pyplot as plt
 import numpy as np
-
+#Scatter
 def figuras1(mejor_par, n_iter, F):
 
     mejor_par = np.array(mejor_par)
@@ -22,6 +22,7 @@ def figuras1(mejor_par, n_iter, F):
     plt.title('Ubicacion de los mejores individuos ubicados en el plano 2D')
     plt.show()
 
+#Promedio y Fitness Maximo
 def figuras2(generaciones, mejores, prom):
 
     #Crear figura con 2 subplots

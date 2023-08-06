@@ -45,9 +45,11 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         
         # Se escala el integer a un valor dentro del rango deseado
         valor = dom[i][0] + (integer/(valor_max-1)) * (dom[i][1] - dom[i][0])
+        
+        rounded_number = round(valor, 5)
 
         # Guardo en la lista inicial
-        decodificado.append(valor)
+        decodificado.append(rounded_number)
     return decodificado
 
 #-----------------------PEORES INDIVIDUOS------------------------------
