@@ -7,8 +7,6 @@ import control as ct
 
 #------------------FUNCIONES DEL PID------------------
 
-#Cons
-
 #Construye la forma del controlador PID con los parametros del PID como entrada
 def PID_tf_generator(K):
     # K = [kp, Ki, Kd]

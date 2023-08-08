@@ -16,11 +16,11 @@ import math
 import time
 
 #Definir rango para entrada
-dom = [[0.1, 100.0], [0.1, 50.0], [0.1, 50.0]] #Funcion 1
+dom = [[0.1, 50.0], [0.1, 50.0], [0.1, 100.0]] #Funcion 1
 print("Numero de variables:", len(dom))
 
 # Definir el numero de generaciones
-n_iter = 10
+n_iter = 20
 # Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
@@ -68,11 +68,11 @@ num = 0.21
 den = [1,0,0]
 
 #Generador de Error para el Fitness
-def F(K):
+def F(K, tf_sistema):
     #K = [kp, Ki, Kd]
     #Se guarda la funcion de transferencia del sistema
-    start_time_F = time.time()
-    tf_sistema = tf_planta_generator(num,den)
+    #start_time_F = time.time()
+    #tf_sistema = tf_planta_generator(num,den)
     #Se ajustan pesos
     w1=5
     w2=5
@@ -111,7 +111,8 @@ def F(K):
     #Se calcula funcion de costo de salida
     #Cada uno de los indices penaliza y aumenta la funcion de costo, indicando un peor individuo
     W= w1*IAE + w2*ISE + w3*ITAE + w4*ITSE + w5*Rise_Time + w6*Overshoot
-    print("La funcion F se tardo ", time.time() - start_time_F, "en ejecutarse")
+    #print("La funcion F se tardo ", time.time() - start_time_F, "en ejecutarse")
+
     return W
 
 #Sistema antes del Control PID
@@ -136,23 +137,25 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
 
     # Enumerando generaciones segun el numero de iteraciones de entrada
     for gen in range(n_iter):
-        print("Count en AG ", count)
+
         # Se decodifica la poblacion, individuo por individuo
         decoded = [decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, p) for p in pob]
 
         #Minimizando la funcion de fitness
-        fitness = [1/(1+f(d)) for d in decoded]
+        fitness = [1/(1+f(d, ball_beam_sistema)) for d in decoded]
 
+        #Para graficar los primeros individuos generados
         if gen == 0:
             #Grafico los primeros 5 individuos generados en la primera generacion
-            while count < 5:
-                for ind in decoded:
-                    tf_ind = PID_tf_generator(ind)
-                    #Se ejecuta el step function de la planta controlado por el PID
-                    tiempo_ind,yout_ind = PID_Plant_Response(tf_ind,ball_beam_sistema)
-                    plot_grafica(tiempo_ind,yout_ind,"Step Response","Tiempo","Amplitud")
-                    count = count +1
-                    print(count)
+            for ind in decoded:
+                tf_ind = PID_tf_generator(ind)
+                #Se ejecuta el step function de la planta controlado por el PID
+                tiempo_ind,yout_ind = PID_Plant_Response(tf_ind,ball_beam_sistema)
+                plot_grafica(tiempo_ind,yout_ind,"Step Response","Tiempo","Amplitud")
+                count = count +1
+                if count == 5:
+                    break
+
         # Se asigna una puntuacion a cada candidato
 
         if renorm == 1:
@@ -173,9 +176,9 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
         #               for _ in range(n_pob)]
         
         #------------------------Seleccion por Ruleta----------------------------------
-        padres_selec = ruleta(pob,fitness)
+        #padres_selec = ruleta(pob,fitness)
 
-        #padres_selec = uni_estocastica(pob,fitness)
+        padres_selec = uni_estocastica(pob,fitness)
 
         # Se crea la siguiente generacion
         hijos = list()
@@ -219,63 +222,50 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
         Settling_time = S["SettlingTime"]
         Overshoot = S["Overshoot"]
         #CONDICION DE PARADA Overshoot o tiempo de establecimiento menor a 1 y 1.5 segundos
-        if Overshoot <= 0.7 and Settling_time <= 0.5 :
-            print("Se consiguio un individuo que cumple con las condiciones!")
+        if Overshoot <= 0.4 and Settling_time <= 0.5:
+            print("  ")
+            print("Se consiguio un individuo que cumple con las condiciones en al generacion ", gen)
             break
         else:
             continue
 
+
+    print("El algoritmo se tardo ", time.time() - start_time, " segundos en ejecutarse")
+
     #Mejor individuo de todas las generaciones
     mejor_fitness = np.amax(mejores)
     print("El mejor fitness es: ", mejor_fitness) 
-    print("El mejor individuo esta ubicado en la posicion: ", np.argmax(mejores))
+    #print("El mejor individuo esta ubicado en la posicion: ", np.argmax(mejores))
     mejor_individuo = mejor_par[np.argmax(mejores)]
     print("El mejor individuo de la ultima generacion esta ubicado en: ", ultimo_mejor)
-
-    print("Caracteristicas del sistema controlado:")
-    print("Rise Time:", Rise_Time)
-    print("Settling Time:", Settling_time)
-    print("Overshoot:", Overshoot)
-    #Graficando respuesta en tiempo del sistema
-    #Se ejecuta el sistema para obtener la respuesta
-    PID_tf = PID_tf_generator(mejor_individuo)
-    #Se ejecuta el step function de la planta controlado por el PID
-    Time,yout = PID_Plant_Response(PID_tf,ball_beam_sistema)
-    #Funcion de transferencia del sistema a lazo cerrado
-    #T = ct.feedback(PID_tf*ball_beam_sistema,1)
-    plot_grafica(Time,yout,"Step Response","Tiempo","Amplitud")
-    #informacion de la respuesta del sistema
-    # S = ct.step_info(T)
-    # Rise_Time = S["RiseTime"]
-    # Settling_time = S["SettlingTime"]
-    # Overshoot = S["Overshoot"]
+    print("  ")
 
     return [mejor_individuo, mejor_fitness]
 
 start_time = time.time()
 best, puntuacion = alg_gen(F, dom, n_bits, n_iter,
                             n_pob, r_cross, r_mut, count)
-print("El algoritmo se tardo ", time.time() - start_time, "en ejecutarse")
 
-print('Listo!')
-print("El mejor resultado obtenido es el siguiente:", best)
+#Graficando respuesta en tiempo del sistema
+#Se crea el controlador con la mejor solucion encontrada
+PID_tf = PID_tf_generator(best)
+#Se ejecuta el step function de la planta controlado por el PID
+Time,yout = PID_Plant_Response(PID_tf,ball_beam_sistema)
+plot_grafica(Time,yout,"Step Response","Tiempo","Amplitud")
+
+#Funcion de transferencia del sistema a lazo cerrado
+T = ct.feedback(PID_tf*ball_beam_sistema,1)
+S = ct.step_info(T)
+Rise_Time = S["RiseTime"]
+Settling_time = S["SettlingTime"]
+Overshoot = S["Overshoot"]
+print("  ")
+print("Caracteristicas del sistema controlado:")
+print("Rise Time:", Rise_Time)
+print("Settling Time:", Settling_time)
+print("Overshoot:", Overshoot)
+print("  ")
+#print("El mejor resultado obtenido es el siguiente:", best)
+print("Siendo los parametros del PID: Kp = ", best[0], " Ki = ", best[1], "Kd = ", best[2])
 
 figuras_pid(generaciones, mejores, prom)
-
-
-
-
-# #PRIMERA GRAFICA
-# fig1 = plt.figure()
-# plt.plot(generaciones, mejores)
-# plt.xlabel('Generaciones')
-# plt.ylabel('Fitness del mejor individuo')
-# plt.title('Evolución del Algoritmo Genético')
-
-# #Graficando curva promedio 
-# fig2 = plt.figure()
-# plt.plot(generaciones, prom)
-# plt.xlabel('Generaciones')
-# plt.ylabel('Fitness promedio de los individuos')
-# plt.title('Evolución del Algoritmo Genético')
-# plt.show()
