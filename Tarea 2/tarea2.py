@@ -107,8 +107,10 @@ def alg_gen(f1, f2, f3, dom, n_bits, n_iter, n_pob, r_cross, r_mut, tipo_optim, 
         decoded = [decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, p) for p in pob]
         #decoded = [decode(dom, n_bits_array, n_bits, p) for p in pob]
 
+        print(decoded)
         # Se verifica cual funcion a utilizar                
 
+        #Se calcula el fitness para cada individuo (constituido por pares o  de numeros)
         #Funcion 1
         if func == 1 and tipo_optim == 1:
             fitness = [f1(d) for d in decoded]

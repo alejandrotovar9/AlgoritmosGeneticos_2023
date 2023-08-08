@@ -3,6 +3,38 @@ from numpy.random import randint
 import matplotlib.pyplot as plt
 from numpy.random import rand
 import numpy as np
+import control as ct
+
+#------------------FUNCIONES DEL PID------------------
+
+#Cons
+
+#Construye la forma del controlador PID con los parametros del PID como entrada
+def PID_tf_generator(K):
+    # K = [kp, Ki, Kd]
+    PID_Num=[K[2],K[0],K[1]]
+    PID_Den=[1,0]
+    PID_tf=ct.tf(PID_Num,PID_Den)
+    return PID_tf
+
+#Ejecuta la respuesta escalon del sistema y nos devuelve salida y vector de tiempo
+def PID_Plant_Response(PID_TF,TF_gr):
+    feedBack = ct.feedback(PID_TF*TF_gr,1)
+    #Time=list(np.arange(0,40,0.1)) #400 puntos
+    time = np.linspace(0,5,100)
+    time, yout = ct.step_response(sys=feedBack,T=time,X0=0)
+    return time,yout
+
+def step_response_sinPID(sys):
+    time = np.linspace(0,5,100)
+    time, yout = ct.step_response(sys,T=time,X0=0)
+    return time,yout
+
+#Crea la funcion de transferencia de la planta o Ball and Beam
+def tf_planta_generator(num,den):
+    s = ct.tf('s')
+    sys = ct.tf(num,den)
+    return sys
 
 def plot_grafica(tiempo, yout, titulo, titulox, tituloy):
     plt.figure(figsize=(8,6))
@@ -12,8 +44,7 @@ def plot_grafica(tiempo, yout, titulo, titulox, tituloy):
     plt.ylabel(tituloy)
     plt.tick_params(axis='both',which='major',labelsize=14)
     plt.grid(visible=True)
-    plt.show
-
+    plt.autoscale(enable=True, axis='x') 
     plt.show()
 
 def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
@@ -58,7 +89,7 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         # Se escala el integer a un valor dentro del rango deseado
         valor = dom[i][0] + (integer/(valor_max-1)) * (dom[i][1] - dom[i][0])
         
-        rounded_number = round(valor, 8)
+        rounded_number = round(valor, 5)
 
         # Guardo en la lista inicial
         decodificado.append(rounded_number)
@@ -214,6 +245,21 @@ def mutacion(bitstring, r_mut):
             # Si era 0 cambia a 1 y 1 cambia a 0, es el negado
             bitstring[i] = 1 - bitstring[i]
 
-#----------------------------------OTROS OPERADORES DE MUTACION Y CRUCE------------------------------------
+#----------------------------------GRAFICAS------------------------------------
 
+def figuras_pid(generaciones, mejores, prom):
 
+    #Crear figura con 2 subplots
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+
+    ax1.plot(generaciones, mejores)
+    ax1.set_xlabel('Generaciones')
+    ax1.set_ylabel('Fitness del mejor individuo')
+    ax1.set_title('Evolución del Algoritmo Genético')
+
+    ax2.plot(generaciones, prom)
+    ax2.set_xlabel('Generaciones')
+    ax2.set_ylabel('Fitness promedio de los individuos')
+    ax2.set_title('Evolución del Algoritmo Genético')
+
+    plt.show()

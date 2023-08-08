@@ -51,6 +51,8 @@ def decode(dom, n_bits_1, n_bits_2, n_bits_3, n_bits, bitstring):
         # Guardo en la lista inicial
         decodificado.append(rounded_number)
     return decodificado
+#Me devuelve el string de bits decodificado en un vector que contiene 2 o 3 variables
+#Es decir, 2 o 3 pares de numeros reales Ej:
 
 #-----------------------PROMEDIO-----------------------
 def promedio_corridas(arrays, corridas):
