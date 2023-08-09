@@ -4,15 +4,27 @@ import matplotlib.pyplot as plt
 from numpy.random import rand
 import numpy as np
 import control as ct
+from control.matlab import lsim
 
 #------------------FUNCIONES DEL PID------------------
+
+def senal_de_control(error, PID_tf, time):
+    Q = 1
+    R = 1
+    control_signal, T, xout = lsim(PID_tf, error, time)
+    u = np.array(control_signal.copy())
+    J = np.trapz(Q*error**2 + R*(0.001*u**2), dx=0.01)
+    return 1/J
 
 #Construye la forma del controlador PID con los parametros del PID como entrada
 def PID_tf_generator(K):
     # K = [kp, Ki, Kd]
-    PID_Num=[K[2],K[0],K[1]]
-    PID_Den=[1,0]
-    PID_tf=ct.tf(PID_Num,PID_Den)
+    # PID_Num=[K[2],K[0],K[1]]
+    # PID_Den=[1,0]
+    # PID_tf=ct.tf(PID_Num,PID_Den)
+    s = ct.tf('s')
+    K = K[0] + K[1] + (K[2]*s)/(1+0.001*s)
+    PID_tf=ct.tf(K)
     return PID_tf
 
 #Ejecuta la respuesta escalon del sistema y nos devuelve salida y vector de tiempo
