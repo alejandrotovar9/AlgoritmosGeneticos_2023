@@ -16,7 +16,7 @@ import math
 import time
 
 #Definir rango para entrada
-dom = [[0.1, 50.0], [0.1, 50.0], [0.1, 100.0]] #Funcion 1
+dom = [[1.0, 100.0], [1.0, 100.0], [1.0, 50.0]] #Funcion 1
 print("Numero de variables:", len(dom))
 
 # Definir el numero de generaciones
@@ -24,7 +24,7 @@ n_iter = 20
 # Definir el numero de bits por variable
 
 #Para calcular el numero de bits necesarios dada la precision
-pre = 1e-2 #Numero de cifras decimales/ precision
+pre = 1e-3 #Numero de cifras decimales/ precision
 
 n_bits_array = []
 
@@ -59,6 +59,10 @@ renorm = 1
 dec_renorm, max_fit = 1, 100
 #Elitismo
 elit = 1
+#Gap generacional
+gap_gen = 1
+p_gap = 10
+dupli = 1
 
 #Contador para las graficas iniciales
 count = 0
@@ -70,15 +74,13 @@ den = [1,0,0]
 #Generador de Error para el Fitness
 def F(K, tf_sistema):
     #K = [kp, Ki, Kd]
-    #Se guarda la funcion de transferencia del sistema
-    #start_time_F = time.time()
-    #tf_sistema = tf_planta_generator(num,den)
+
     #Se ajustan pesos
     w1=5
     w2=5
-    w3=4
-    w4=4
-    w5=1
+    w3=3
+    w4=3
+    w5=5
     w6=5
 
     #Se ejecuta el sistema para obtener la respuesta
@@ -98,19 +100,23 @@ def F(K, tf_sistema):
 
     #informacion de la respuesta del sistema
     S = ct.step_info(T)
-    Rise_Time = S["RiseTime"]
+    #Rise_Time = S["RiseTime"]
     #Settling_time = S["SettlingTime"]
 
+    Settling_time = 0
     #Se integra con dx = 0.01 para los distintos errores
-    #IAE = np.trapz(Absolute_Error, dx=0.01) #Integral del error absoluto
-    IAE = 0
+    IAE = np.trapz(Absolute_Error, dx=0.01) #Integral del error absoluto
     ISE = np.trapz(Square_Error, dx=0.01) #Integral del Square Error
     ITAE = np.trapz((Time*Absolute_Error), dx=0.01) #Integral del Error Absoluto por el tiempo
     ITSE = np.trapz((Time*Square_Error), dx=0.01) #Integral del Error absoluto
+    #u = senal_de_control(Error, PID_tf, Time)
 
     #Se calcula funcion de costo de salida
     #Cada uno de los indices penaliza y aumenta la funcion de costo, indicando un peor individuo
-    W= w1*IAE + w2*ISE + w3*ITAE + w4*ITSE + w5*Rise_Time + w6*Overshoot
+    W= w1*IAE + w2*ISE + w3*ITAE + w4*ITSE + w5*Settling_time + w6*Overshoot
+    #W = senal_de_control(Error, PID_tf, Time)
+    #PENALIZR SENALES DE CONTROL MUY GRANDES
+
     #print("La funcion F se tardo ", time.time() - start_time_F, "en ejecutarse")
 
     return W
@@ -118,7 +124,7 @@ def F(K, tf_sistema):
 #Sistema antes del Control PID
 ball_beam_sistema = tf_planta_generator(num,den)
 tiempo_sin_pid, yout_sin_pid = step_response_sinPID(ball_beam_sistema)
-plot_grafica(tiempo_sin_pid, yout_sin_pid, "Respuesta a un escalón sin control PID", "Tiempo", "Amplitud")
+plot_grafica(tiempo_sin_pid, yout_sin_pid, "Respuesta escalón sin control PID", "Tiempo", "Amplitud")
 J = ct.step_info(ball_beam_sistema)
 
 # --------------------------Algoritmo Genetico----------------------------------
@@ -153,10 +159,13 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
                 tiempo_ind,yout_ind = PID_Plant_Response(tf_ind,ball_beam_sistema)
                 plot_grafica(tiempo_ind,yout_ind,"Step Response","Tiempo","Amplitud")
                 count = count +1
-                if count == 5:
+                if count == 1:
                     break
 
         # Se asigna una puntuacion a cada candidato
+
+        #Arreglo la poblacion de mejor a peor para varios usos
+        mejor_a_peor_arr = orden_poblacion(fitness, pob)
 
         if renorm == 1:
             #Se genera vector de fitness y poblacion renormalizado
@@ -171,15 +180,17 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
         promedio = np.mean(fitness)
         mejor_binario = pob[best_index]
 
-        #------------------------Seleccion por Torneo----------------------------------
-        #padres_selec = [selection(pob, fitness, tipo_optim)
+        #------------------------Seleccion----------------------------------
+        if renorm == 1:
+            #padres_selec = ruleta(pob_norm,fitness_norm)
+            padres_selec = uni_estocastica(pob_norm,fitness_norm)
+            #padres_selec = [selection(pob_norm, fitness_norm, tipo_optim) for _ in range(n_pob)]
+        else:
+            #padres_selec = ruleta(pob, fitness)
+            padres_selec = uni_estocastica(pob,fitness)
+            #padres_selec = [selection(pob, fitness, tipo_optim)
         #               for _ in range(n_pob)]
-        
-        #------------------------Seleccion por Ruleta----------------------------------
-        #padres_selec = ruleta(pob,fitness)
-
-        padres_selec = uni_estocastica(pob,fitness)
-
+    
         # Se crea la siguiente generacion
         hijos = list()
 
@@ -200,8 +211,28 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
         prom.append(promedio)
         ultimo_mejor = best_pair
 
-        # Se actualiza la poblacion actual SIN ELITISMO
-        pob = hijos
+        #-----------------------------------------Gap Generacional----------------------------------------
+        #Se sustituyen solo un porcentaje de la poblacion generada
+        if gap_gen==1:
+            for k in range(len(pob) - 1, len(pob) - int((len(pob)+1)*(p_gap/100)) - 1, -1): #Recorre desde el ultimo individuo
+
+                #Genero numero aleatoria que sera la posicion en la cual escogere al hijo nuevo
+                num_rand = randint(0, len(pob)- 1)
+                #Teniendo el vector de indices, lo recorro desde el peor y sustituyo ese indice en la pob original
+
+                #-----------------------------SIN DUPLICADOS----------------------------------------
+                if dupli == 1:
+                    while hijos[num_rand] in pob:
+                        #Si el hijo a escoger ya se encuentra en la poblacion, se busca un nuevo hijo entre los disponibles
+                        num_rand = randint(0, len(pob)- 1)
+                #Sustituyo a los peores individuos de la original para nuevos hijos generados 
+                pob[mejor_a_peor_arr[k]] = hijos[num_rand] #Creacion de la nueva poblacion
+        else:
+            # Se actualiza la poblacion actual
+            pob = hijos
+
+        # # Se actualiza la poblacion actual SIN ELITISMO
+        # pob = hijos
 
         #Actualizacion por elitismo, mantengo al mejor individuo de la poblacion anterior
         if elit == 1:
@@ -245,13 +276,11 @@ def alg_gen(f, dom, n_bits, n_iter, n_pob, r_cross, r_mut, count):
 start_time = time.time()
 best, puntuacion = alg_gen(F, dom, n_bits, n_iter,
                             n_pob, r_cross, r_mut, count)
-
 #Graficando respuesta en tiempo del sistema
 #Se crea el controlador con la mejor solucion encontrada
 PID_tf = PID_tf_generator(best)
 #Se ejecuta el step function de la planta controlado por el PID
 Time,yout = PID_Plant_Response(PID_tf,ball_beam_sistema)
-plot_grafica(Time,yout,"Step Response","Tiempo","Amplitud")
 
 #Funcion de transferencia del sistema a lazo cerrado
 T = ct.feedback(PID_tf*ball_beam_sistema,1)
@@ -267,5 +296,7 @@ print("Overshoot:", Overshoot)
 print("  ")
 #print("El mejor resultado obtenido es el siguiente:", best)
 print("Siendo los parametros del PID: Kp = ", best[0], " Ki = ", best[1], "Kd = ", best[2])
+
+plot_grafica(Time,yout,"Step Response","Tiempo","Amplitud")
 
 figuras_pid(generaciones, mejores, prom)
